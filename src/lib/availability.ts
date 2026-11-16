@@ -24,3 +24,10 @@ export function coversShift(a: DayAvail | null, start: string, end: string): boo
 }
 
 export { overlaps };
+
+export function availClass(a: DayAvail | null) {
+  if (!a) return "bg-card";
+  if (a.status === "available") return "bg-success/25";
+  if (a.status === "partial") return "bg-warning/35";
+  return "bg-destructive/15";
+}

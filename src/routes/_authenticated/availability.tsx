@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
-import { resolveAvail, type DayAvail } from "@/lib/availability";
+import { availClass, resolveAvail, type DayAvail } from "@/lib/availability";
 import { addDays, fmtDay, hhmm, hkToday, parseDay, toDay } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,13 +20,6 @@ export const Route = createFileRoute("/_authenticated/availability")({
 
 const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 type Status = DayAvail["status"] | "clear";
-
-export function availClass(a: DayAvail | null) {
-  if (!a) return "bg-card";
-  if (a.status === "available") return "bg-success/25";
-  if (a.status === "partial") return "bg-warning/35";
-  return "bg-destructive/15";
-}
 
 function Page() {
   const { data: me } = useMe();

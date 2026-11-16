@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
-import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home } from "lucide-react";
+import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ const officeNav = [
   { to: "/home", label: "Events", icon: CalendarDays },
   { to: "/board", label: "Availability", icon: Grid3x3 },
   { to: "/staff", label: "Staff", icon: Users },
-  { to: "/payroll", label: "Payroll", icon: FileSpreadsheet },
+  { to: "/payroll", label: "Reports", icon: FileSpreadsheet },
   { to: "/settings", label: "Rates", icon: Settings },
 ] as const;
 
@@ -77,7 +77,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="absolute -right-0.5 -top-0.5 min-w-5 rounded-full bg-destructive px-1 text-center text-[11px] font-bold leading-5 text-destructive-foreground">{unread}</span>
               )}
             </Link>
-            <span className="hidden text-sm text-muted-foreground lg:inline">{me?.fullName}</span>
+            {me && (
+              <Link to="/staff/$id" params={{ id: me.id }} className="rounded-full p-1 hover:bg-secondary" aria-label="My profile">
+                <UserCircle className="h-6 w-6" />
+              </Link>
+            )}
             <button onClick={signOut} className="rounded-full p-2 hover:bg-secondary" aria-label="Sign out">
               <LogOut className="h-5 w-5" />
             </button>

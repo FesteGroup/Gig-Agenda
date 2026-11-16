@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CallStaffDialog } from "@/components/app/CallStaffDialog";
 import { cn } from "@/lib/utils";
+import { Avatar } from "@/components/app/Avatar";
 
 export const Route = createFileRoute("/_authenticated/events/$id")({
   head: () => ({ meta: [{ title: "Event — Gig Agenda" }, { name: "description", content: "Event staffing and team." }, { property: "og:title", content: "Event — Gig Agenda" }, { property: "og:description", content: "Event staffing and team." }] }),
@@ -113,16 +114,6 @@ function EventPage() {
       </section>
 
       {me.isOffice && <OfficeStaffing eventId={id} ev={ev} onChange={() => { qc.invalidateQueries({ queryKey: ["team", id] }); qc.invalidateQueries({ queryKey: ["events"] }); }} />}
-    </div>
-  );
-}
-
-function Avatar({ name, url, size = 36 }: { name: string; url?: string | null; size?: number }) {
-  return url ? (
-    <img src={url} alt="" className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />
-  ) : (
-    <div className="flex shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold" style={{ width: size, height: size }}>
-      {name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
     </div>
   );
 }

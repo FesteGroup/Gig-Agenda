@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,13 +30,13 @@ function Page() {
       {data.length === 0 && <p className="text-muted-foreground">Nothing yet.</p>}
       <div className="divide-y rounded-xl border bg-card">
         {data.map((n) => (
-          <Link key={n.id} to={n.link ?? "/home"} className={cn("block p-4 hover:bg-secondary", !n.read_at && "bg-accent/15")}>
+          <a key={n.id} href={n.link ?? "/home"} className={cn("block p-4 hover:bg-secondary", !n.read_at && "bg-accent/15")}>
             <div className="flex justify-between gap-2">
               <span className="font-semibold">{n.title}</span>
               <span className="shrink-0 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString("en-GB", { timeZone: "Asia/Hong_Kong", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
             </div>
             {n.body && <div className="text-sm text-muted-foreground">{n.body}</div>}
-          </Link>
+          </a>
         ))}
       </div>
     </div>
