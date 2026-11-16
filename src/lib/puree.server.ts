@@ -6,8 +6,27 @@ export const ACTIVE_STATES = ["accepted", "confirmed", "live", "processing"];
 export const PENDING_STATES = ["pending", "quote", "draft", "quoted"];
 export const HIDDEN_STATES = ["declined", "expired"];
 
-export function tokenFor(account: Account): string | undefined {
-  return account === "relish" ? process.env["PUREE_TOKEN_RELISH"] : process.env["PUREE_TOKEN_GINGERS"];
+// Without its own Puree tokens this app reads Puree through the Calendar app
+// (event-invoice-link) read-only /api/puree-relay, the same way Feste Inventory does,
+// using the signed-in office user's Gig Agenda session. Set CALENDAR_APP_URL to the
+// Calendar's published address (e.g. "https://<name>.lovable.app").
+const TOKEN_KEYS: Record<Account, string[]> = {
+  relish: ["PUREE_TOKEN_RELISH", "PUREE_TOKEN", "PUREE_RELISH_TOKEN"],
+  gingers: ["PUREE_TOKEN_GINGERS", "PUREE_GINGERS_TOKEN"],
+};
+
+export function calendarAppUrl() {
+  return (process.env["CALENDAR_APP_URL"] ?? "").replace(/\/+$/, "");
+}
+
+/** A Puree token, or a relay marker when the Calendar app should make the call. */
+export function tokenFor(account: Account, userJwt?: string): string | undefined {
+  for (const key of TOKEN_KEYS[account]) {
+    const v = process.env[key];
+    if (v) return v;
+  }
+  if (userJwt && calendarAppUrl()) return `relay:${account}:${userJwt}`;
+  return undefined;
 }
 
 type PureeOrder = {
@@ -25,7 +44,13 @@ type PureeOrder = {
 };
 
 async function get(token: string, path: string) {
-  const res = await fetch(BASE + path, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
+  const relay = token.match(/^relay:(relish|gingers):(.+)$/);
+  const res = relay
+    ? await fetch(`${calendarAppUrl()}/api/puree-relay?account=${relay[1] === "relish" ? "Relish" : "Gingers"}&path=${encodeURIComponent(path)}`, {
+        headers: { Authorization: `Bearer ${relay[2]}`, Accept: "application/json", "x-relay-app": "gig-agenda" },
+        signal: AbortSignal.timeout(20000),
+      })
+    : await fetch(BASE + path, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }, signal: AbortSignal.timeout(20000) });
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Puree ${res.status}: ${body.slice(0, 200)}`);

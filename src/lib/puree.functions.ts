@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { getRequest } from "@tanstack/react-start/server";
+
+const jwtOf = () => (getRequest()?.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "") || undefined;
 
 export const syncPuree = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -14,9 +17,9 @@ export const syncPuree = createServerFn({ method: "POST" })
     let synced = 0;
 
     for (const account of ["relish", "gingers"] as const) {
-      const token = p.tokenFor(account);
+      const token = p.tokenFor(account, jwtOf());
       if (!token) {
-        warnings.push(`${account === "relish" ? "Relish" : "Gingers"} Puree token is not set yet`);
+        warnings.push(`${account === "relish" ? "Relish" : "Gingers"}: no Puree token and no Calendar app link (CALENDAR_APP_URL) set yet`);
         continue;
       }
       try {
@@ -70,7 +73,7 @@ export const getOrderDetails = createServerFn({ method: "POST" })
     const { data: ev } = await supabase.from("events").select("*").eq("id", data.eventId).single();
     if (!ev || ev.source !== "puree" || !ev.puree_id || !ev.account) return null;
     const p = await import("./puree.server");
-    const token = p.tokenFor(ev.account as "relish" | "gingers");
+    const token = p.tokenFor(ev.account as "relish" | "gingers", jwtOf());
     if (!token) return null;
     const d = await p.getOrder(token, ev.puree_id);
     const live = p.mapOrder(d, ev.account as "relish" | "gingers");

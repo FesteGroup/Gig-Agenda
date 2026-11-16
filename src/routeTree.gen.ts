@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAvailabilityRouteImport } from './routes/_authenticated/availability'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
+import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedInvitationsRouteImport } from './routes/_authenticated/invitations'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -46,6 +47,11 @@ const AuthenticatedAvailabilityRoute =
 const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
   id: '/board',
   path: '/board',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/availability': typeof AuthenticatedAvailabilityRoute
   '/board': typeof AuthenticatedBoardRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/home': typeof AuthenticatedHomeRoute
   '/invitations': typeof AuthenticatedInvitationsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/availability': typeof AuthenticatedAvailabilityRoute
   '/board': typeof AuthenticatedBoardRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/home': typeof AuthenticatedHomeRoute
   '/invitations': typeof AuthenticatedInvitationsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/availability': typeof AuthenticatedAvailabilityRoute
   '/_authenticated/board': typeof AuthenticatedBoardRoute
+  '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/invitations': typeof AuthenticatedInvitationsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/availability'
     | '/board'
+    | '/demo'
     | '/home'
     | '/invitations'
     | '/notifications'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/availability'
     | '/board'
+    | '/demo'
     | '/home'
     | '/invitations'
     | '/notifications'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/availability'
     | '/_authenticated/board'
+    | '/_authenticated/demo'
     | '/_authenticated/home'
     | '/_authenticated/invitations'
     | '/_authenticated/notifications'
@@ -222,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/board'
       fullPath: '/board'
       preLoaderRoute: typeof AuthenticatedBoardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/demo': {
+      id: '/_authenticated/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof AuthenticatedDemoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/home': {
@@ -286,6 +305,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAvailabilityRoute: typeof AuthenticatedAvailabilityRoute
   AuthenticatedBoardRoute: typeof AuthenticatedBoardRoute
+  AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedInvitationsRoute: typeof AuthenticatedInvitationsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -299,6 +319,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAvailabilityRoute: AuthenticatedAvailabilityRoute,
   AuthenticatedBoardRoute: AuthenticatedBoardRoute,
+  AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedInvitationsRoute: AuthenticatedInvitationsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,

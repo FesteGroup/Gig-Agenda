@@ -21,6 +21,7 @@ function Board() {
   const [span, setSpan] = useState<"7" | "14" | "31">("14");
   const [start, setStart] = useState(addDays(today, -((parseDay(today).getDay() + 6) % 7)));
   const [pos, setPos] = useState("all");
+  const [who, setWho] = useState("all");
   const { data: positions = [] } = usePositions();
   const n = Number(span);
   const days = Array.from({ length: n }, (_, i) => addDays(start, i));
@@ -38,7 +39,10 @@ function Board() {
     },
   });
 
-  const people = (data?.people ?? []).filter((p) => pos === "all" || p.main_position_id === pos || p.other_position_ids.includes(pos));
+  const people = (data?.people ?? []).filter(
+    (p) => (who === "all" || p.id === who) && (pos === "all" || p.main_position_id === pos || p.other_position_ids.includes(pos)),
+  );
+  const selected = who === "all" ? null : (data?.people ?? []).find((p) => p.id === who) ?? null;
   const cell = (uid: string, day: string) => resolveAvail(day, data?.avail.find((a) => a.user_id === uid && a.day === day), data?.patterns.filter((x) => x.user_id === uid));
   const posName = (id: string | null) => positions.find((p) => p.id === id)?.name ?? "";
 
@@ -46,6 +50,13 @@ function Board() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="mr-auto text-3xl font-bold">Availability</h1>
+        <Select value={who} onValueChange={setWho}>
+          <SelectTrigger className="w-48" aria-label="Staff member"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All staff</SelectItem>
+            {(data?.people ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={pos} onValueChange={setPos}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -61,6 +72,17 @@ function Board() {
         <Button variant="ghost" size="icon" onClick={() => setStart(addDays(start, -n))} aria-label="Previous"><ChevronLeft /></Button>
         <Button variant="ghost" size="icon" onClick={() => setStart(addDays(start, n))} aria-label="Next"><ChevronRight /></Button>
       </div>
+      {selected && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 text-sm">
+          <span className="font-semibold">{selected.full_name}</span>
+          <span className="text-muted-foreground">{posName(selected.main_position_id)}</span>
+          <span>Available {days.filter((d) => cell(selected.id, d)?.status === "available").length} days</span>
+          <span>Partly {days.filter((d) => cell(selected.id, d)?.status === "partial").length}</span>
+          <span>Unavailable {days.filter((d) => cell(selected.id, d)?.status === "unavailable").length}</span>
+          <span className="text-muted-foreground">Not answered {days.filter((d) => !cell(selected.id, d)).length}</span>
+          <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setWho("all")}>Show everyone</Button>
+        </div>
+      )}
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="text-xs">
           <thead>
@@ -95,7 +117,7 @@ function Board() {
               <td className="sticky left-0 z-10 bg-secondary p-2">Available</td>
               {days.map((d) => <td key={d} className="p-1 text-center">{people.filter((p) => { const a = cell(p.id, d); return a && a.status !== "unavailable"; }).length}</td>)}
             </tr>
-            {pos === "all" && positions.map((ps) => (
+            {pos === "all" && !selected && positions.map((ps) => (
               <tr key={ps.id} className="border-t text-muted-foreground">
                 <td className="sticky left-0 z-10 bg-card p-2 pl-4">{ps.name}</td>
                 {days.map((d) => (

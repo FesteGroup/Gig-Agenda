@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
-import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle } from "lucide-react";
+import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle, Send, Briefcase, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useMe } from "@/lib/me";
+import { setView, useMe } from "@/lib/me";
 import { cn } from "@/lib/utils";
 
 const officeNav = [
@@ -11,6 +11,7 @@ const officeNav = [
   { to: "/board", label: "Availability", icon: Grid3x3 },
   { to: "/staff", label: "Staff", icon: Users },
   { to: "/payroll", label: "Reports", icon: FileSpreadsheet },
+  { to: "/demo", label: "Demo", icon: Send },
   { to: "/settings", label: "Rates", icon: Settings },
 ] as const;
 
@@ -71,6 +72,24 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1">
+            {me?.canOffice && (
+              <div className="mr-1 flex rounded-full border p-0.5 text-xs font-medium" role="group" aria-label="Switch view">
+                <button
+                  onClick={() => { setView("office"); navigate({ to: "/home" }); }}
+                  className={cn("flex items-center gap-1 rounded-full px-2.5 py-1", me.view === "office" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")}
+                  aria-pressed={me.view === "office"}
+                >
+                  <Briefcase className="h-3.5 w-3.5" />Office
+                </button>
+                <button
+                  onClick={() => { setView("staff"); navigate({ to: "/home" }); }}
+                  className={cn("flex items-center gap-1 rounded-full px-2.5 py-1", me.view === "staff" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")}
+                  aria-pressed={me.view === "staff"}
+                >
+                  <Utensils className="h-3.5 w-3.5" />Staff
+                </button>
+              </div>
+            )}
             <Link to="/notifications" className="relative rounded-full p-2 hover:bg-secondary" aria-label="Notifications">
               <Bell className="h-5 w-5" />
               {unread > 0 && (
