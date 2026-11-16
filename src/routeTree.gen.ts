@@ -10,33 +10,121 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAvailabilityRouteImport } from './routes/_authenticated/availability'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedInvitationsRouteImport } from './routes/_authenticated/invitations'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAvailabilityRoute =
+  AuthenticatedAvailabilityRouteImport.update({
+    id: '/availability',
+    path: '/availability',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInvitationsRoute =
+  AuthenticatedInvitationsRouteImport.update({
+    id: '/invitations',
+    path: '/invitations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEventsIdRoute = AuthenticatedEventsIdRouteImport.update({
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/availability': typeof AuthenticatedAvailabilityRoute
+  '/home': typeof AuthenticatedHomeRoute
+  '/invitations': typeof AuthenticatedInvitationsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/events/$id': typeof AuthenticatedEventsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/availability': typeof AuthenticatedAvailabilityRoute
+  '/home': typeof AuthenticatedHomeRoute
+  '/invitations': typeof AuthenticatedInvitationsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/events/$id': typeof AuthenticatedEventsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/availability': typeof AuthenticatedAvailabilityRoute
+  '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/invitations': typeof AuthenticatedInvitationsRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/availability'
+    | '/home'
+    | '/invitations'
+    | '/notifications'
+    | '/events/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/availability'
+    | '/home'
+    | '/invitations'
+    | '/notifications'
+    | '/events/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/availability'
+    | '/_authenticated/home'
+    | '/_authenticated/invitations'
+    | '/_authenticated/notifications'
+    | '/_authenticated/events/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +136,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/availability': {
+      id: '/_authenticated/availability'
+      path: '/availability'
+      fullPath: '/availability'
+      preLoaderRoute: typeof AuthenticatedAvailabilityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invitations': {
+      id: '/_authenticated/invitations'
+      path: '/invitations'
+      fullPath: '/invitations'
+      preLoaderRoute: typeof AuthenticatedInvitationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/events/$id': {
+      id: '/_authenticated/events/$id'
+      path: '/events/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof AuthenticatedEventsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAvailabilityRoute: typeof AuthenticatedAvailabilityRoute
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedInvitationsRoute: typeof AuthenticatedInvitationsRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedEventsIdRoute: typeof AuthenticatedEventsIdRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAvailabilityRoute: AuthenticatedAvailabilityRoute,
+  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedInvitationsRoute: AuthenticatedInvitationsRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedEventsIdRoute: AuthenticatedEventsIdRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
