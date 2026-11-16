@@ -18,7 +18,7 @@ export function InvitationCard({ inv }: { inv: MyInvitation }) {
   const expired = inv.deadline && new Date(inv.deadline) < new Date();
 
   async function respond(accept: boolean) {
-    const { error } = await supabase.rpc("respond_invitation", { _id: inv.id, _accept: accept, _reason: accept ? undefined : reason || undefined });
+    const { error } = await supabase.rpc("respond_invitation", { _id: inv.id, _accept: accept, ...(!accept && reason ? { _reason: reason } : {}) });
     if (error) toast.error(error.message);
     else toast.success(accept ? "Accepted — the office will confirm" : inv.status === "invited" ? "Declined" : "Cancelled");
     setDeclining(false);

@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Roles live in `user_roles` (office/staff); never on profiles. Sensitive data (position_rates, staff_notes) are separate office-only tables so RLS, not UI, hides them.
+- Staff reply to invitations only via the `respond_invitation` RPC, which enforces slot limits and notifies office.
+- Puree is called only from server functions (`src/lib/puree.functions.ts`); events are cached in `events` keyed by (account, puree_id).
+- Cost/overtime and availability rules live in pure functions in `src/lib/costs.ts` and `src/lib/availability.ts` with tests beside them.
+- Profile photos are stored as small data URLs because public storage buckets are blocked in this workspace.

@@ -13,7 +13,7 @@ export function toDay(d: Date): string {
 }
 
 export function parseDay(s: string): Date {
-  const [y, m, d] = s.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 
@@ -28,7 +28,7 @@ export function hhmm(t?: string | null): string {
 }
 
 export function minutesOf(t: string): number {
-  const [h, m] = t.split(":").map(Number);
+  const [h = 0, m = 0] = t.split(":").map(Number);
   return h * 60 + (m || 0);
 }
 

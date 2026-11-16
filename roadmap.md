@@ -1,0 +1,12 @@
+# Gig Agenda roadmap
+- [x] Sign-in, office/staff roles (auto office for verified @relish.com.hk / @feste-group.com)
+- [x] Positions, rates, after-midnight rates
+- [x] Staff availability (days, weekly patterns, quick buttons) + office board
+- [x] Puree event calendar (needs PUREE_TOKEN_RELISH / PUREE_TOKEN_GINGERS)
+- [x] Event page: staffing plan, call staff (direct / first-to-accept), team, costs
+- [x] In-app notifications, accept/decline, auto-close when full, cancel alerts
+- [x] Staff directory, invite by email, profiles, payroll CSV, open-slots overview
+- [ ] Puree tokens — waiting on user
+- [ ] Email notifications (needs email sender domain setup)
+- [ ] Web push + installable app
+- [ ] Day-before reminders, message all confirmed staff, auto-confirm option

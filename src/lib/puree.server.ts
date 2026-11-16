@@ -58,7 +58,7 @@ export function toHkTime(v?: string | null): string | null {
     return new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Hong_Kong", hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
   }
   const m = v.match(/^(\d{1,2}):(\d{2})/);
-  return m ? `${m[1].padStart(2, "0")}:${m[2]}` : null;
+  return m ? `${m[1]!.padStart(2, "0")}:${m[2]}` : null;
 }
 
 export function venueOf(o: PureeOrder): string | null {

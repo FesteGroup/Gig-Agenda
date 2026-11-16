@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/payroll")({
 });
 
 function lastDay(month: string) {
-  const [y, m] = month.split("-").map(Number);
+  const [y = 2026, m = 1] = month.split("-").map(Number);
   return `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, "0")}`;
 }
 
