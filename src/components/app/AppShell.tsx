@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
-import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle, Send, Briefcase, Utensils } from "lucide-react";
+import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle, Send, Briefcase, Utensils, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { setView, useMe } from "@/lib/me";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ const officeNav = [
   { to: "/board", label: "Availability", icon: Grid3x3 },
   { to: "/staff", label: "Staff", icon: Users },
   { to: "/payroll", label: "Reports", icon: FileSpreadsheet },
+  { to: "/expenses", label: "Expenses", icon: Receipt },
   { to: "/demo", label: "Demo", icon: Send },
   { to: "/settings", label: "Rates", icon: Settings },
 ] as const;
@@ -19,6 +20,7 @@ const staffNav = [
   { to: "/home", label: "My gigs", icon: Home },
   { to: "/invitations", label: "Invitations", icon: Inbox },
   { to: "/availability", label: "Availability", icon: CalendarCheck },
+  { to: "/expenses", label: "Expenses", icon: Receipt },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
