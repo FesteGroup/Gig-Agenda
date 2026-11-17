@@ -35,3 +35,4 @@ use the editor.
 - Puree is called only from server functions (`src/lib/puree.functions.ts`); events are cached in `events` keyed by (account, puree_id).
 - Cost/overtime and availability rules live in pure functions in `src/lib/costs.ts` and `src/lib/availability.ts` with tests beside them.
 - Profile photos are stored as small data URLs because public storage buckets are blocked in this workspace.
+- Expenses use database-enforced ownership and office-only review; receipt files use a private bucket with user-ID folders so access is enforced independently of page views.

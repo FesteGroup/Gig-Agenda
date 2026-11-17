@@ -1,4 +1,5 @@
 # Gig Agenda roadmap
+- [x] Expense database, private receipts, office notifications; automated checks and signed-in submission/review verified (staff-only account check unavailable)
 - [x] Sign-in, office/staff roles (auto office for verified @relish.com.hk / @feste-group.com)
 - [x] Positions, rates, after-midnight rates
 - [x] Staff availability (days, weekly patterns, quick buttons) + office board
