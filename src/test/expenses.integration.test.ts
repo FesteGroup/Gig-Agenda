@@ -17,7 +17,7 @@ async function request(path: string, method = "GET", body?: unknown, token = ses
   return fetch(`${base}${path}`, {
     method,
     headers: { apikey: key, Authorization: `Bearer ${token}`, "Content-Type": "application/json", Prefer: "return=representation" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? null : JSON.stringify(body),
   });
 }
 
