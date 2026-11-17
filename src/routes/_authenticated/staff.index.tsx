@@ -33,7 +33,16 @@ function Page() {
     if (!confirm("Add the Relish workers, their rates and their past shifts from the servers' payment file? Running it again updates the same records.")) return;
     setImporting(true);
     try {
-      const r = await runImport();
+      let offset = 0;
+      for (;;) {
+        const w = await runImport({ data: { step: "workers", offset } });
+        if (w.step !== "workers") break;
+        toast.message(`Workers ${Math.min(w.next, w.total)} of ${w.total}…`);
+        if (w.done) break;
+        offset = w.next;
+      }
+      const r = await runImport({ data: { step: "shifts", offset: 0 } });
+      if (r.step !== "shifts") throw new Error("Import did not finish");
       toast.success(`${r.workers} workers, ${r.events} events and ${r.shifts} shifts imported`);
       await qc.invalidateQueries();
     } catch (e) {
@@ -66,7 +75,7 @@ function Page() {
     const d = new Date(y, m - 1, 0); // last day of previous month
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   })();
-  const { data: hoursBy = {} } = useQuery({
+  const { data: hoursBy = {}, error: hoursError } = useQuery({
     queryKey: ["staff-hours", from, to],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -120,6 +129,7 @@ function Page() {
             <SelectItem value="hours">Most hours first</SelectItem>
           </SelectContent>
         </Select>
+        {hoursError && <span className="text-destructive">Hours could not load: {(hoursError as Error).message}</span>}
         <span className="ml-auto text-muted-foreground">Team total <span className="font-semibold tabular-nums text-foreground">{fmtH(totalHours)} h</span></span>
       </div>
       <div className="divide-y rounded-xl border bg-card">

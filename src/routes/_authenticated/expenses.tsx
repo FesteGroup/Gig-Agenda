@@ -40,7 +40,9 @@ interface Expense {
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const expenses = () => (supabase as any).from("expenses");
-const CATEGORIES = ["Taxi", "Meal", "Parking", "Transport", "Supplies", "Other"];
+// Stored values match the database check; "Transport" is shown as "Other transportations".
+const CATEGORIES = ["Taxi", "Transport", "Meal", "Parking", "Supplies", "Other"];
+const catLabel = (c: string) => (c === "Transport" ? "Other transportations" : c);
 const STATUS_LABEL: Record<Status, string> = { submitted: "Waiting", approved: "Approved", rejected: "Rejected", paid: "Paid" };
 const STATUS_CLS: Record<Status, string> = { submitted: "", approved: "border-success text-success", rejected: "border-destructive text-destructive", paid: "bg-success text-success-foreground border-success" };
 const isMissing = (e: { code?: string; message?: string } | null) => !!e && (e.code === "42P01" || e.code === "PGRST205" || /expenses/.test(e.message ?? "") && /not find|does not exist/.test(e.message ?? ""));
@@ -114,7 +116,7 @@ function MyExpenses({ userId, name }: { userId: string; name: string }) {
       const { error } = await expenses().insert({ user_id: userId, event_id: f.event_id || null, day: ev?.day ?? f.day, category: f.category, amount, note: f.note.trim() || null, receipt_path });
       if (error) throw error;
       await supabase.rpc("notify_office", {
-        _title: `Expense: ${f.category} ${hkd(amount)} – ${name}`,
+        _title: `Expense: ${catLabel(f.category)} ${hkd(amount)} – ${name}`,
         _body: [ev?.label ?? fmtDay(f.day), f.note.trim(), file ? "Receipt attached" : "No receipt"].filter(Boolean).join(" · "),
         _link: "/expenses",
       });
@@ -154,7 +156,7 @@ function MyExpenses({ userId, name }: { userId: string; name: string }) {
                 <Label>Type</Label>
                 <Select value={f.category} onValueChange={(v) => setF({ ...f, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                  <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{catLabel(c)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="grid gap-1.5"><Label>Amount (HKD)</Label><Input type="number" inputMode="decimal" min={0} step="0.1" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} required /></div>
@@ -181,7 +183,7 @@ function MyExpenses({ userId, name }: { userId: string; name: string }) {
             {list.map((x) => (
               <div key={x.id} className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 text-sm">
                 <div className="mr-auto min-w-0">
-                  <div className="font-medium">{x.category} · {hkd(Number(x.amount))}</div>
+                  <div className="font-medium">{catLabel(x.category)} · {hkd(Number(x.amount))}</div>
                   <div className="truncate text-muted-foreground">{x.events ? `${fmtDay(x.events.day)} · ${x.events.title}` : fmtDay(x.day)}{x.note ? ` · ${x.note}` : ""}</div>
                   {x.office_note && <div className="text-xs">Office: {x.office_note}</div>}
                 </div>
@@ -226,13 +228,13 @@ function OfficeExpenses() {
     }
     const { error } = await expenses().update({ status: s, office_note, reviewed_at: new Date().toISOString() }).eq("id", x.id);
     if (error) return toast.error(error.message);
-    await supabase.from("notifications").insert({ user_id: x.user_id, title: `Expense ${STATUS_LABEL[s].toLowerCase()}: ${x.category} ${hkd(Number(x.amount))}`, body: office_note, link: "/expenses" });
+    await supabase.from("notifications").insert({ user_id: x.user_id, title: `Expense ${STATUS_LABEL[s].toLowerCase()}: ${catLabel(x.category)} ${hkd(Number(x.amount))}`, body: office_note, link: "/expenses" });
     qc.invalidateQueries({ queryKey: ["expenses"] });
   }
 
   function download() {
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const csv = [["Worker", "Date", "Event", "Type", "Amount (HKD)", "Details", "Status", "Receipt"], ...list.map((x) => [x.profiles?.full_name, x.day, x.events?.title, x.category, Number(x.amount).toFixed(2), x.note, STATUS_LABEL[x.status], x.receipt_path ? "Yes" : "No"])]
+    const csv = [["Worker", "Date", "Event", "Type", "Amount (HKD)", "Details", "Status", "Receipt"], ...list.map((x) => [x.profiles?.full_name, x.day, x.events?.title, catLabel(x.category), Number(x.amount).toFixed(2), x.note, STATUS_LABEL[x.status], x.receipt_path ? "Yes" : "No"])]
       .map((r) => r.map(esc).join(","))
       .join("\n");
     const a = document.createElement("a");
@@ -279,7 +281,7 @@ function OfficeExpenses() {
               <tr key={x.id} className="border-t align-top">
                 <td className="p-2 font-medium">{x.profiles?.full_name}</td>
                 <td className="p-2">{fmtDay(x.day)}{x.events ? <div className="text-xs text-muted-foreground">{x.events.title}</div> : null}</td>
-                <td className="p-2">{x.category}</td>
+                <td className="p-2">{catLabel(x.category)}</td>
                 <td className="p-2 text-right tabular-nums">{hkd(Number(x.amount))}</td>
                 <td className="max-w-56 p-2 text-muted-foreground">{x.note}{x.office_note ? <div className="text-xs text-foreground">Office: {x.office_note}</div> : null}</td>
                 <td className="p-2">{x.receipt_path ? <Button size="sm" variant="ghost" onClick={() => openReceipt(x.receipt_path!)}><FileText className="h-4 w-4" />View</Button> : <span className="text-xs text-muted-foreground">None</span>}</td>
