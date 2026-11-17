@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hkToday, shiftHours } from "@/lib/time";
 import { usePositions } from "@/lib/me";
 import { inviteStaff } from "@/lib/staff.functions";
+import { importRelishStaff } from "@/lib/import.functions";
 import { Avatar } from "@/components/app/Avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,22 @@ function Page() {
   const { data: positions = [] } = usePositions();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const qc = useQueryClient();
+  const runImport = useServerFn(importRelishStaff);
+  const [importing, setImporting] = useState(false);
+  async function doImport() {
+    if (!confirm("Add the Relish workers, their rates and their past shifts from the servers' payment file? Running it again updates the same records.")) return;
+    setImporting(true);
+    try {
+      const r = await runImport();
+      toast.success(`${r.workers} workers, ${r.events} events and ${r.shifts} shifts imported`);
+      await qc.invalidateQueries();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setImporting(false);
+    }
+  }
   const { data = [] } = useQuery({
     queryKey: ["staff"],
     queryFn: async () => {
@@ -34,7 +51,7 @@ function Page() {
     },
   });
   const today = hkToday();
-  const [period, setPeriod] = useState<"month" | "last" | "year" | "all">("month");
+  const [period, setPeriod] = useState<"month" | "last" | "year" | "all">("all");
   const [sort, setSort] = useState<"name" | "hours">("name");
   const from = (() => {
     const [y = 2026, m = 1] = today.split("-").map(Number);
@@ -82,6 +99,7 @@ function Page() {
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="mr-auto text-3xl font-bold">Staff</h1>
         <Input placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} className="w-48" />
+        <Button variant="outline" onClick={doImport} disabled={importing}>{importing ? "Importing…" : "Import Relish servers"}</Button>
         <Button onClick={() => setOpen(true)}><UserPlus className="h-4 w-4" /> Add staff</Button>
       </div>
       <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 text-sm">

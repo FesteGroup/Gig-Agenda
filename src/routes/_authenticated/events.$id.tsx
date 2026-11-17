@@ -1,3 +1,4 @@
+import { isPublicHoliday, shiftPay } from "@/lib/pay";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -118,7 +119,7 @@ function EventPage() {
   );
 }
 
-type EventRow = { id: string; title: string; day: string; venue: string | null; start_time: string | null };
+type EventRow = { id: string; title: string; day: string; venue: string | null; start_time: string | null; notes?: string | null };
 
 function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventRow; onChange: () => void }) {
   const qc = useQueryClient();
@@ -170,7 +171,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
     const rate = rateOf(r.position_id);
     const people = r.invitations.filter((i) => i.status === "confirmed" || i.status === "accepted");
     people.forEach((i) => {
-      const c = staffCost(hours, i.profiles?.personal_hourly_cost, rate?.hourly_cost);
+      const c = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rate?.hourly_cost, publicHoliday: isPublicHoliday(ev.notes) });
       if (c == null) missingRates = true;
       totalCost += c ?? 0;
       costLines.push({ name: i.profiles?.full_name ?? "", position: r.positions?.name ?? "", hours, cost: c });
@@ -193,6 +194,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
                 <span className="font-semibold">{r.positions?.name}</span>
                 <span className="text-sm">{r.quantity} needed</span>
                 <span className="text-sm text-muted-foreground">{hhmm(r.start_time)}–{hhmm(r.end_time)}{r.break_minutes ? ` · ${r.break_minutes} min break` : ""}</span>
+                <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", filled >= r.quantity ? "bg-success/20 text-success" : "bg-warning/30 text-accent-foreground")}>{filled} of {r.quantity} accepted</span>
                 <div className="ml-auto flex gap-1">
                   <Button size="sm" onClick={() => setCallRow(r.id)} disabled={filled >= r.quantity}><Megaphone className="h-4 w-4" /> Call staff</Button>
                   <Button size="icon" variant="ghost" onClick={() => delRow(r.id)} aria-label="Remove row"><Trash2 className="h-4 w-4" /></Button>

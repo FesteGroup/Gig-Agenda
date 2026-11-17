@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { addDays, fmtDay, hhmm, hkToday, hkd, shiftHours } from "@/lib/time";
+import { isPublicHoliday, shiftPay } from "@/lib/pay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -27,7 +28,7 @@ function Page() {
       const [inv, rates] = await Promise.all([
         supabase
           .from("invitations")
-          .select("id, profiles(full_name,personal_hourly_cost), events!inner(title,day), staffing_rows(position_id,start_time,end_time,break_minutes,positions(name))")
+          .select("id, profiles(full_name,personal_hourly_cost), events!inner(title,day,notes), staffing_rows(position_id,start_time,end_time,break_minutes,positions(name))")
           .eq("status", "confirmed")
           .gte("events.day", `${month}-01`)
           .lte("events.day", lastDay(month)),
@@ -38,7 +39,8 @@ function Page() {
           const r = i.staffing_rows!;
           const hours = shiftHours(r.start_time, r.end_time, r.break_minutes);
           const rate = i.profiles?.personal_hourly_cost ?? rates.data?.find((x) => x.position_id === r.position_id)?.hourly_cost ?? null;
-          return { staff: i.profiles?.full_name ?? "", event: i.events!.title, date: i.events!.day, position: r.positions?.name ?? "", hours, rate, amount: rate == null ? null : rate * hours };
+          const amount = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rates.data?.find((x) => x.position_id === r.position_id)?.hourly_cost, publicHoliday: isPublicHoliday(i.events!.notes) });
+          return { staff: i.profiles?.full_name ?? "", event: i.events!.title, date: i.events!.day, position: r.positions?.name ?? "", hours, rate, amount };
         })
         .sort((a, b) => a.staff.localeCompare(b.staff) || a.date.localeCompare(b.date));
     },
