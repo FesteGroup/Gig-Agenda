@@ -14,42 +14,23 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { DEMO_WORKERS, demoAvail, type DemoStatus, type DemoWorker } from "@/lib/demo-data";
+import { demoStatus, removeDemo, seedDemo } from "@/lib/demo.functions";
 
 export const Route = createFileRoute("/_authenticated/demo")({
   head: () => ({ meta: [{ title: "Demo — Gig Agenda" }, { name: "description", content: "Try sending invitations to sample staff." }, { property: "og:title", content: "Demo — Gig Agenda" }, { property: "og:description", content: "Try sending invitations to sample staff." }] }),
   component: Demo,
 });
 
-// ── Sample data (stays in this browser; nothing is sent to real people) ──
-type Status = "available" | "partial" | "unavailable" | null;
-interface Worker { id: string; name: string; position: string; rate: number; phone: string }
+// ── Sample data (practice mode stays in this browser; nothing is sent to real people) ──
+type Status = DemoStatus;
+type Worker = DemoWorker & { id: string };
 interface Invite { id: string; workerId: string; day: string; eventTitle: string; position: string; start: string; end: string; status: "waiting" | "accepted" | "declined"; reason?: string | undefined; sentAt: string; repliedAt?: string | undefined }
 interface Note { id: string; text: string; at: string; read: boolean }
-
-const WORKERS: Worker[] = [
-  { id: "w1", name: "Alice Chan", position: "Server", rate: 120, phone: "+852 9123 0001" },
-  { id: "w2", name: "Ben Wong", position: "Server", rate: 120, phone: "+852 9123 0002" },
-  { id: "w3", name: "Carmen Li", position: "Server", rate: 120, phone: "+852 9123 0003" },
-  { id: "w4", name: "Daniel Ho", position: "Bartender", rate: 150, phone: "+852 9123 0004" },
-  { id: "w5", name: "Elena Rossi", position: "Bartender", rate: 150, phone: "+852 9123 0005" },
-  { id: "w6", name: "Felix Tam", position: "Chef", rate: 220, phone: "+852 9123 0006" },
-  { id: "w7", name: "Grace Lau", position: "Chef", rate: 220, phone: "+852 9123 0007" },
-  { id: "w8", name: "Hugo Martin", position: "Event Manager", rate: 250, phone: "+852 9123 0008" },
-  { id: "w9", name: "Ivy Ng", position: "Server", rate: 120, phone: "+852 9123 0009" },
-  { id: "w10", name: "Jason Yip", position: "Kitchen Porter", rate: 90, phone: "+852 9123 0010" },
-];
+const WORKERS: Worker[] = DEMO_WORKERS.map((w) => ({ ...w, id: w.slug }));
 const POSITIONS = [...new Set(WORKERS.map((w) => w.position))];
-
-/** Repeatable sample availability per worker and day. */
-function demoAvail(workerId: string, day: string): { status: Status; from?: string; to?: string } {
-  let h = 0;
-  for (const c of workerId + day) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  const r = h % 10;
-  if (r < 5) return { status: "available" };
-  if (r < 7) return { status: "partial", from: r === 5 ? "17:00" : "12:00", to: r === 5 ? "23:59" : "18:00" };
-  if (r < 9) return { status: "unavailable" };
-  return { status: null };
-}
 
 const KEY = "gig-agenda:demo";
 interface DemoState { invites: Invite[]; notes: Note[] }
@@ -163,6 +144,7 @@ function Demo() {
         <h1 className="mr-auto flex items-center gap-2 text-3xl font-bold"><Sparkles className="h-6 w-6 text-primary" />Demo</h1>
         <Button variant="outline" size="sm" onClick={() => { save({ invites: [], notes: [] }); toast("Demo reset"); }} className="gap-1.5"><RotateCcw className="h-4 w-4" />Reset demo</Button>
       </div>
+      <DemoInApp />
       <p className="rounded-lg border border-dashed bg-secondary/40 p-3 text-sm text-muted-foreground">
         Practice area with 10 sample workers. Invitations here stay in this browser and are never sent to real people. The events come from your Puree calendar. For real call-outs, open an event on the <Link to="/home" className="underline">Events</Link> page and use Call staff.
       </p>
@@ -364,6 +346,43 @@ function Demo() {
           ))}
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/** Put the sample workers into the real app (staff list, calendar events, availability, reports, rates). */
+function DemoInApp() {
+  const qc = useQueryClient();
+  const status = useServerFn(demoStatus);
+  const seed = useServerFn(seedDemo);
+  const remove = useServerFn(removeDemo);
+  const [busy, setBusy] = useState(false);
+  const { data } = useQuery({ queryKey: ["demo-status"], queryFn: () => status() });
+  const on = (data?.workers ?? 0) > 0;
+  async function run(fn: () => Promise<unknown>, ok: string) {
+    setBusy(true);
+    try {
+      await fn();
+      toast.success(ok);
+      await qc.invalidateQueries();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 text-sm">
+      <div className="mr-auto min-w-0">
+        <div className="font-semibold">Demo workers in the whole app</div>
+        <div className="text-muted-foreground">
+          {on
+            ? `${data?.workers} demo workers are in Staff, Availability, Reports and Rates, with "DEMO ·" events on the calendar.`
+            : "Add the 10 sample workers to Staff, Availability, Reports and Rates, plus a few \"DEMO ·\" events on the calendar with their names."}
+        </div>
+      </div>
+      {on && <Button variant="outline" disabled={busy} onClick={() => run(() => remove(), "Demo workers and events removed")}>Remove demo data</Button>}
+      <Button disabled={busy} onClick={() => run(() => seed(), on ? "Demo data refreshed" : "Demo workers added")}>{busy ? "Working…" : on ? "Refresh demo data" : "Add demo workers to the app"}</Button>
     </div>
   );
 }
