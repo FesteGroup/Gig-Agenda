@@ -190,10 +190,9 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           return (
             <div key={r.id} className="rounded-xl border bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="h-3 w-3 rounded-full" style={{ background: r.positions?.color }} />
-                <span className="font-semibold">{r.quantity} × {r.positions?.name}</span>
+                <span className="font-semibold">{r.positions?.name}</span>
+                <span className="text-sm">{r.quantity} needed</span>
                 <span className="text-sm text-muted-foreground">{hhmm(r.start_time)}–{hhmm(r.end_time)}{r.break_minutes ? ` · ${r.break_minutes} min break` : ""}</span>
-                <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", filled >= r.quantity ? "bg-success/20 text-success" : "bg-warning/30 text-accent-foreground")}>{filled}/{r.quantity}</span>
                 <div className="ml-auto flex gap-1">
                   <Button size="sm" onClick={() => setCallRow(r.id)} disabled={filled >= r.quantity}><Megaphone className="h-4 w-4" /> Call staff</Button>
                   <Button size="icon" variant="ghost" onClick={() => delRow(r.id)} aria-label="Remove row"><Trash2 className="h-4 w-4" /></Button>
