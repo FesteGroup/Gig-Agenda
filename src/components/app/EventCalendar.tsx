@@ -148,20 +148,20 @@ export function EventCalendar() {
 
       {view === "month" ? (
         <div className="overflow-hidden rounded-xl border bg-card">
-          <div className="grid grid-cols-7 border-b bg-secondary text-center text-xs font-semibold text-muted-foreground">
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => <div key={d} className="py-2">{d}</div>)}
+          <div className="grid grid-cols-7 border-b bg-gradient-to-r from-primary/15 via-sky/15 to-violet/15 text-center text-xs font-semibold text-foreground/70">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => <div key={d} className={cn("py-2", i > 4 && "text-coral")}>{d}</div>)}
           </div>
           <div className="grid grid-cols-7">
-            {Array.from({ length: 42 }, (_, i) => addDays(from, i)).map((day) => {
+            {Array.from({ length: 42 }, (_, i) => addDays(from, i)).map((day, i) => {
               const inMonth = parseDay(day).getMonth() === parseDay(anchor).getMonth();
               const list = byDay.get(day) ?? [];
               return (
                 <button
                   key={day}
                   onClick={() => { setAnchor(day); setView("day"); }}
-                  className={cn("min-h-20 border-b border-r p-1 text-left align-top sm:min-h-28", !inMonth && "bg-muted/50 text-muted-foreground")}
+                  className={cn("min-h-20 border-b border-r p-1 text-left align-top transition-colors hover:bg-sky/5 sm:min-h-28", i % 7 > 4 && "bg-coral/[0.04]", day === today && "bg-sun/15", !inMonth && "bg-muted/50 text-muted-foreground")}
                 >
-                  <div className={cn("mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs", day === today && "bg-primary text-primary-foreground font-bold")}>
+                  <div className={cn("mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs", day === today && "bg-coral text-white font-bold shadow")}>
                     {parseDay(day).getDate()}
                   </div>
                   <div className="space-y-0.5">
@@ -177,7 +177,7 @@ export function EventCalendar() {
         <div className="space-y-4">
           {Array.from({ length: view === "week" ? 7 : 1 }, (_, i) => addDays(from, i)).map((day) => (
             <section key={day}>
-              <h2 className={cn("mb-2 text-sm font-semibold font-sans", day === today ? "text-primary" : "text-muted-foreground")}>{fmtDay(day, { weekday: "long", day: "numeric", month: "short" })}</h2>
+              <h2 className={cn("mb-2 text-sm font-semibold font-sans", day === today ? "text-coral" : "text-muted-foreground")}>{fmtDay(day, { weekday: "long", day: "numeric", month: "short" })}</h2>
               <div className="space-y-2">
                 {(byDay.get(day) ?? []).map((e) => <EventCard key={e.id} e={e} />)}
                 {!(byDay.get(day) ?? []).length && <p className="text-sm text-muted-foreground">No events</p>}
@@ -207,7 +207,7 @@ function MiniChip({ e }: { e: Ev }) {
       onClick={(ev) => ev.stopPropagation()}
       className={cn(
         "block truncate rounded px-1 py-0.5 text-[10px] font-medium leading-tight sm:text-[11px]",
-        e.account === "gingers" ? "bg-accent/40 text-accent-foreground" : "bg-primary/15 text-primary",
+        e.source === "manual" ? "bg-violet/15 text-violet" : e.account === "gingers" ? "bg-accent/40 text-accent-foreground" : "bg-primary/15 text-primary",
         isPending(e) && "border border-dashed border-current bg-transparent",
       )}
     >
@@ -222,9 +222,13 @@ function EventCard({ e }: { e: Ev }) {
     <Link
       to="/events/$id"
       params={{ id: e.id }}
-      className={cn("flex gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-primary", isPending(e) && "border-dashed border-2")}
+      className={cn(
+        "flex gap-3 rounded-xl border border-l-4 bg-card p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
+        e.source === "manual" ? "border-l-violet" : e.account === "gingers" ? "border-l-accent" : "border-l-primary",
+        isPending(e) && "border-dashed border-2",
+      )}
     >
-      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-display text-lg font-bold", e.account === "gingers" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground")}>
+      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-display text-lg font-bold", e.source === "manual" ? "bg-violet text-white" : e.account === "gingers" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground")}>
         {acct(e)}
       </div>
       <div className="min-w-0 flex-1">
@@ -239,7 +243,7 @@ function EventCard({ e }: { e: Ev }) {
         </div>
       </div>
       {e.slots_needed > 0 && (
-        <div className={cn("self-center rounded-full px-2 py-0.5 text-xs font-semibold", open > 0 ? "bg-warning/30 text-accent-foreground" : "bg-success/20 text-success")}>
+        <div className={cn("self-center rounded-full px-2 py-0.5 text-xs font-semibold", open > 0 ? "bg-coral/15 text-coral" : "bg-success/20 text-success")}>
           {e.slots_filled}/{e.slots_needed}
         </div>
       )}
