@@ -58,10 +58,9 @@ function Page() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8">
       <section className="space-y-3">
         <h1 className="text-3xl font-bold">Positions & rates</h1>
-        <p className="text-sm text-muted-foreground">Hourly amounts in HKD. Staff never see these.</p>
         <p className="text-sm text-muted-foreground">
           <span className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>{" "}
           positions (names starting with "Gingers") are paid a flat hourly cost and use Gingers' own after-midnight client rates
@@ -69,25 +68,25 @@ function Page() {
           midnight on a holiday: F&amp;B Manager HK$720/h, Waiter and Commis Chef HK$570/h.
         </p>
         <div className="overflow-x-auto rounded-xl border bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary text-left text-xs text-muted-foreground">
-              <tr><th className="p-2">Colour</th><th className="p-2">Position</th><th className="p-2">Cost to us / h</th><th className="p-2">Client rate / h</th><th /></tr>
+          <table className="w-full text-base">
+            <thead className="bg-secondary text-left text-sm font-semibold text-muted-foreground">
+              <tr><th className="p-3">Colour</th><th className="p-3">Position</th><th className="p-3">Cost to us / h</th><th className="p-3">Client rate / h</th><th /></tr>
             </thead>
             <tbody>
               {data?.positions.map((p) => {
                 const r = data.rates.find((x) => x.position_id === p.id);
                 return (
                   <tr key={p.id + (r?.hourly_cost ?? "") + (r?.client_rate ?? "")} className="border-t">
-                    <td className="p-2"><input type="color" defaultValue={p.color} onBlur={(e) => e.target.value !== p.color && updPos(p.id, { color: e.target.value })} className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent" aria-label="Colour" /></td>
-                    <td className="p-2">
+                    <td className="p-3"><input type="color" defaultValue={p.color} onBlur={(e) => e.target.value !== p.color && updPos(p.id, { color: e.target.value })} className="h-11 w-16 cursor-pointer rounded border-0 bg-transparent" aria-label="Colour" /></td>
+                    <td className="p-3">
                       <div className="flex items-center gap-2">
-                        {isGingersPosition(p.name) && <span className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>}
-                        <Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} />
+                        {isGingersPosition(p.name) && <span className="rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>}
+                        <Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} className="h-11 text-base md:text-base" />
                       </div>
                     </td>
-                    <td className="p-2"><Input type="number" defaultValue={r?.hourly_cost ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.hourly_cost ?? null) && updRate(p.id, { hourly_cost: num(e.target.value) })} /></td>
-                    <td className="p-2"><Input type="number" defaultValue={r?.client_rate ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.client_rate ?? null) && updRate(p.id, { client_rate: num(e.target.value) })} /></td>
-                    <td className="p-2"><Button size="icon" variant="ghost" onClick={() => delPos(p.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button></td>
+                    <td className="p-3"><Input type="number" defaultValue={r?.hourly_cost ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.hourly_cost ?? null) && updRate(p.id, { hourly_cost: num(e.target.value) })} className="h-11 text-base md:text-base" /></td>
+                    <td className="p-3"><Input type="number" defaultValue={r?.client_rate ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.client_rate ?? null) && updRate(p.id, { client_rate: num(e.target.value) })} className="h-11 text-base md:text-base" /></td>
+                    <td className="p-3"><Button size="icon" variant="ghost" onClick={() => delPos(p.id)} aria-label="Delete" className="h-11 w-11"><Trash2 className="h-5 w-5" /></Button></td>
                   </tr>
                 );
               })}
