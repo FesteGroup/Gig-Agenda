@@ -51,7 +51,7 @@ function Page() {
     queryFn: async () => {
       const { data } = await supabase
         .from("events")
-        .select("id,title,day,start_time,account, staffing_rows(quantity, positions(name), invitations(status))")
+        .select("id,title,day,start_time,account,source,state, staffing_rows(quantity, positions(name), invitations(status))")
         .gte("day", today)
         .lte("day", addDays(today, 30))
         .order("day");
@@ -60,7 +60,8 @@ function Page() {
           const missing = e.staffing_rows.map((r) => ({ pos: r.positions?.name ?? "", n: r.quantity - r.invitations.filter((i) => i.status === "accepted" || i.status === "confirmed").length })).filter((x) => x.n > 0);
           return { ...e, missing };
         })
-        .filter((e) => e.missing.length);
+        // Confirmed events only (no quotes).
+        .filter((e) => e.missing.length && (e.source === "manual" || ["accepted", "confirmed", "live", "processing"].includes(String(e.state ?? "").toLowerCase())));
     },
   });
 

@@ -20,11 +20,18 @@ export const syncPuree = createServerFn({ method: "POST" })
     // When Puree can't be read live, use the Calendar app's copy of the Puree orders (refreshed daily).
     async function useCopy(account: "relish" | "gingers") {
       const { PUREE_COPY, PUREE_COPY_AT } = await import("./puree-copy.server");
-      const rows = PUREE_COPY.filter((r) => r.account === account && r.day >= data.from && r.day <= data.to).map((r) => ({ source: "puree" as const, ...r }));
+      const inRange = PUREE_COPY.filter((r) => r.account === account && r.day >= data.from && r.day <= data.to);
+      // Only confirmed events; quotes and drafts are left out.
+      const rows = inRange.filter((r) => p.ACTIVE_STATES.includes(String(r.state ?? "").toLowerCase())).map((r) => ({ source: "puree" as const, ...r }));
       if (rows.length) {
         const { error } = await supabase.from("events").upsert(rows, { onConflict: "account,puree_id" });
         if (error) throw new Error(error.message);
         synced += rows.length;
+      }
+      // Events no longer confirmed keep their record but get their new state (so they are hidden).
+      for (const st of [...new Set(inRange.filter((r) => !p.ACTIVE_STATES.includes(String(r.state ?? "").toLowerCase())).map((r) => r.state ?? ""))]) {
+        const ids = inRange.filter((r) => (r.state ?? "") === st).map((r) => r.puree_id);
+        await supabase.from("events").update({ state: st }).eq("account", account).in("puree_id", ids);
       }
       fromCopy = PUREE_COPY_AT;
     }
@@ -37,8 +44,9 @@ export const syncPuree = createServerFn({ method: "POST" })
       }
       try {
         const orders = await p.listOrders(token, data.from, data.to);
+        // Only confirmed events; quotes and drafts are left out.
         const rows = orders
-          .filter((o) => !p.HIDDEN_STATES.includes(String(o.state ?? "").toLowerCase()))
+          .filter((o) => p.ACTIVE_STATES.includes(String(o.state ?? "").toLowerCase()))
           .map((o) => p.mapOrder(o, account))
           .filter((r) => r.day);
         if (rows.length) {
@@ -47,7 +55,7 @@ export const syncPuree = createServerFn({ method: "POST" })
           synced += rows.length;
         }
         // Remove cached events Puree now reports as declined/expired, unless staffed.
-        const hidden = orders.filter((o) => p.HIDDEN_STATES.includes(String(o.state ?? "").toLowerCase())).map((o) => String(o.id));
+        const hidden = orders.filter((o) => !p.ACTIVE_STATES.includes(String(o.state ?? "").toLowerCase())).map((o) => String(o.id));
         if (hidden.length) {
           await supabase.from("events").update({ state: "declined" }).eq("account", account).in("puree_id", hidden);
         }

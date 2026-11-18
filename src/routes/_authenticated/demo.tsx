@@ -61,8 +61,9 @@ function Demo() {
   const { data: events = [] } = useQuery({
     queryKey: ["demo-events", today, horizon],
     queryFn: async () => {
-      const { data } = await supabase.from("events").select("id,day,title,client_name,start_time,state,account,reference").gte("day", today).lte("day", horizon).order("day");
-      return (data ?? []).filter((e) => !["declined", "expired"].includes(String(e.state ?? "").toLowerCase()));
+      const { data } = await supabase.from("events").select("id,day,title,client_name,start_time,state,account,reference,source").gte("day", today).lte("day", horizon).order("day");
+      // Confirmed events only (no quotes).
+      return (data ?? []).filter((e) => e.source === "manual" || ["accepted", "confirmed", "live", "processing"].includes(String(e.state ?? "").toLowerCase()));
     },
   });
 

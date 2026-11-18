@@ -8,8 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { syncPuree } from "@/lib/puree.functions";
 import { addDays, fmtDay, hhmm, hkToday, parseDay, toDay } from "@/lib/time";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { ManualEventDialog } from "./ManualEventDialog";
@@ -37,7 +35,6 @@ function rangeFor(view: View, anchor: string) {
 export function EventCalendar() {
   const [view, setView] = useState<View>("month");
   const [anchor, setAnchor] = useState(hkToday());
-  const [pending, setPending] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const { from, to } = rangeFor(view, anchor);
@@ -93,9 +90,9 @@ export function EventCalendar() {
         const s = (e.state ?? "").toLowerCase();
         if (s === "declined" || s === "expired") return false;
         if (e.source === "manual") return true;
-        return ACTIVE.includes(s) || pending;
+        return ACTIVE.includes(s);
       }),
-    [events, pending],
+    [events],
   );
 
   const byDay = useMemo(() => {
@@ -124,10 +121,6 @@ export function EventCalendar() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="mr-auto text-2xl font-bold sm:text-3xl">{title}</h1>
-        <div className="flex items-center gap-2">
-          <Switch id="pending" checked={pending} onCheckedChange={setPending} />
-          <Label htmlFor="pending" className="text-sm">Quotes</Label>
-        </div>
         <Button variant="outline" size="sm" onClick={() => refresh()} disabled={syncing}>
           <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} /> Refresh
         </Button>
@@ -195,10 +188,6 @@ function acct(e: Ev) {
   return e.source === "manual" ? "M" : e.account === "gingers" ? "G" : "R";
 }
 
-function isPending(e: Ev) {
-  return e.source === "puree" && !ACTIVE.includes((e.state ?? "").toLowerCase());
-}
-
 function MiniChip({ e }: { e: Ev }) {
   return (
     <Link
@@ -208,7 +197,6 @@ function MiniChip({ e }: { e: Ev }) {
       className={cn(
         "block truncate rounded px-1 py-0.5 text-[10px] font-medium leading-tight sm:text-[11px]",
         e.source === "manual" ? "bg-violet/15 text-violet" : e.account === "gingers" ? "bg-accent/40 text-accent-foreground" : "bg-primary/15 text-primary",
-        isPending(e) && "border border-dashed border-current bg-transparent",
       )}
     >
       <b>{acct(e)}</b> {hhmm(e.start_time)} {e.client_name || e.title}
@@ -225,7 +213,6 @@ function EventCard({ e }: { e: Ev }) {
       className={cn(
         "flex gap-3 rounded-xl border border-l-4 bg-card p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
         e.source === "manual" ? "border-l-violet" : e.account === "gingers" ? "border-l-accent" : "border-l-primary",
-        isPending(e) && "border-dashed border-2",
       )}
     >
       <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-display text-lg font-bold", e.source === "manual" ? "bg-violet text-white" : e.account === "gingers" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground")}>
@@ -236,7 +223,6 @@ function EventCard({ e }: { e: Ev }) {
           <span className="font-semibold">{hhmm(e.start_time) || "—"}</span>
           <span className="truncate font-semibold">{e.title}</span>
           {e.reference && <span className="text-xs text-muted-foreground">#{e.reference}</span>}
-          {isPending(e) && <span className="text-xs text-muted-foreground">({e.state})</span>}
         </div>
         <div className="truncate text-sm text-muted-foreground">
           {[e.client_name, e.pax ? `${e.pax} guests` : null, e.venue].filter(Boolean).join(" · ")}
