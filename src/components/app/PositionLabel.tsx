@@ -1,6 +1,6 @@
-import { isGingersPosition, shortPositionName, GINGERS_COLOR } from "@/lib/gingers";
+import { isGingersPosition, shortPositionName } from "@/lib/gingers";
 
-/** Position name with its colour dot; Gingers positions also get a gold "Gingers" badge. */
+/** Position name with its colour dot; Gingers positions are followed by the word "Gingers". */
 export function PositionLabel({
   name,
   color,
@@ -17,15 +17,8 @@ export function PositionLabel({
         className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
         style={{ background: color ?? "#888" }}
       />
-      {g && (
-        <span
-          className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white"
-          style={{ background: GINGERS_COLOR }}
-        >
-          Gingers
-        </span>
-      )}
       <span>{g ? shortPositionName(name) : name}</span>
+      {g && <span className="text-xs font-normal text-muted-foreground">Gingers</span>}
     </span>
   );
 }

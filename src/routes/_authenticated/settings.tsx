@@ -6,7 +6,7 @@ import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { isGingersPosition, GINGERS_COLOR } from "@/lib/gingers";
+import { isGingersPosition, shortPositionName } from "@/lib/gingers";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Positions & rates — Gig Agenda" }, { name: "description", content: "Hourly costs and client rates." }, { property: "og:title", content: "Positions & rates — Gig Agenda" }, { property: "og:description", content: "Hourly costs and client rates." }] }),
@@ -62,8 +62,7 @@ function Page() {
       <section className="space-y-3">
         <h1 className="text-3xl font-bold">Positions & rates</h1>
         <p className="text-sm text-muted-foreground">
-          <span className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>{" "}
-          positions (names starting with "Gingers") are paid a flat hourly cost and use Gingers' own after-midnight client rates
+          Gingers positions are paid a flat hourly cost and use Gingers' own after-midnight client rates
           (F&amp;B Manager HK$290/h, Waiter and Commis Chef HK$240/h). On Hong Kong public holidays their fees are doubled; after
           midnight on a holiday: F&amp;B Manager HK$720/h, Waiter and Commis Chef HK$570/h.
         </p>
@@ -80,8 +79,15 @@ function Page() {
                     <td className="p-3"><input type="color" defaultValue={p.color} onBlur={(e) => e.target.value !== p.color && updPos(p.id, { color: e.target.value })} className="h-11 w-16 cursor-pointer rounded border-0 bg-transparent" aria-label="Colour" /></td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        {isGingersPosition(p.name) && <span className="rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>}
-                        <Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} className="h-11 text-base md:text-base" />
+                        {isGingersPosition(p.name) ? (
+                          <>
+                            {/* Shown without the "Gingers · " prefix; it is kept in the saved name. */}
+                            <Input defaultValue={shortPositionName(p.name)} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== shortPositionName(p.name)) updPos(p.id, { name: `Gingers · ${v}` }); }} className="h-11 text-base md:text-base" />
+                            <span className="shrink-0 text-sm text-muted-foreground">Gingers</span>
+                          </>
+                        ) : (
+                          <Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} className="h-11 text-base md:text-base" />
+                        )}
                       </div>
                     </td>
                     <td className="p-3"><Input type="number" defaultValue={r?.hourly_cost ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.hourly_cost ?? null) && updRate(p.id, { hourly_cost: num(e.target.value) })} className="h-11 text-base md:text-base" /></td>

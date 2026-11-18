@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { GINGERS_POSITIONS } from "./gingers";
+import { GINGERS_POSITIONS, OLD_GINGERS_COLORS } from "./gingers";
 
 let done = false;
 
@@ -15,8 +15,17 @@ export function useEnsureGingersPositions(canOffice: boolean | undefined) {
     if (!canOffice || done) return;
     done = true;
     (async () => {
-      const { data: existing, error } = await supabase.from("positions").select("id,name");
+      const { data: existing, error } = await supabase.from("positions").select("id,name,color");
       if (error || !existing) return;
+      // Gingers positions still in the old gold shades get their own colours (colours picked later stay).
+      for (const p of existing) {
+        const d = GINGERS_POSITIONS.find((g) => g.name.toLowerCase() === p.name.toLowerCase());
+        if (d && OLD_GINGERS_COLORS.includes((p.color ?? "").toLowerCase()) && p.color !== d.color) {
+          await supabase.from("positions").update({ color: d.color }).eq("id", p.id);
+          qc.invalidateQueries({ queryKey: ["positions"] });
+          qc.invalidateQueries({ queryKey: ["settings"] });
+        }
+      }
       const have = new Set(existing.map((p) => p.name.toLowerCase()));
       const missing = GINGERS_POSITIONS.filter((p) => !have.has(p.name.toLowerCase()));
       if (!missing.length) return;

@@ -22,17 +22,17 @@ export type GingersPosition = {
 export const GINGERS_POSITIONS: GingersPosition[] = [
   {
     name: "Gingers · F&B Manager",
-    color: "#8a6d0b",
+    color: "#7c3aed",
     sort: 101,
     hourlyCost: 195,
     clientRate: 240,
     afterMidnight: 290,
     holidayAfterMidnight: 720,
   },
-  { name: "Gingers · Bartender", color: "#b38f12", sort: 102, hourlyCost: 200, clientRate: 300 },
+  { name: "Gingers · Bartender", color: "#0ea5e9", sort: 102, hourlyCost: 200, clientRate: 300 },
   {
     name: "Gingers · Waiter",
-    color: "#d4b03a",
+    color: "#f97316",
     sort: 103,
     hourlyCost: 150,
     clientRate: 190,
@@ -41,7 +41,7 @@ export const GINGERS_POSITIONS: GingersPosition[] = [
   },
   {
     name: "Gingers · Commis Chef",
-    color: "#e6c96b",
+    color: "#db2777",
     sort: 104,
     hourlyCost: null,
     clientRate: 190,
@@ -49,6 +49,9 @@ export const GINGERS_POSITIONS: GingersPosition[] = [
     holidayAfterMidnight: 570,
   },
 ];
+
+/** Gold shades the Gingers positions used before; replaced once by their own colours. */
+export const OLD_GINGERS_COLORS = ["#8a6d0b", "#b38f12", "#d4b03a", "#e6c96b"];
 
 export const isGingersPosition = (name: string | null | undefined) =>
   /^gingers\b/i.test((name ?? "").trim());
