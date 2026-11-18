@@ -5,7 +5,7 @@ import { MapPin, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { fmtDay, hhmm, hkd, shiftHours } from "@/lib/time";
+import { fmtDay, hhmm, hkToday, hkd, shiftHours } from "@/lib/time";
 import type { MyInvitation } from "@/lib/my-gigs";
 
 export function InvitationCard({ inv }: { inv: MyInvitation }) {
@@ -15,7 +15,9 @@ export function InvitationCard({ inv }: { inv: MyInvitation }) {
   const e = inv.events!;
   const r = inv.staffing_rows!;
   const hours = shiftHours(r.start_time, r.end_time, r.break_minutes);
-  const expired = inv.deadline && new Date(inv.deadline) < new Date();
+  // Past events can't be changed any more.
+  const past = e.day < hkToday();
+  const expired = past || (inv.deadline && new Date(inv.deadline) < new Date());
 
   async function respond(accept: boolean) {
     const { error } = await supabase.rpc("respond_invitation", { _id: inv.id, _accept: accept, ...(!accept && reason ? { _reason: reason } : {}) });
@@ -70,7 +72,7 @@ export function InvitationCard({ inv }: { inv: MyInvitation }) {
       {(inv.status === "accepted" || inv.status === "confirmed") && (
         <div className="mt-3 flex items-center justify-between">
           <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-semibold text-success">{inv.status === "confirmed" ? "Confirmed" : "Accepted — awaiting confirmation"}</span>
-          {declining ? (
+          {past ? null : declining ? (
             <div className="flex gap-1">
               <Button size="sm" variant="destructive" onClick={() => respond(false)}>Yes, cancel</Button>
               <Button size="sm" variant="ghost" onClick={() => setDeclining(false)}>No</Button>

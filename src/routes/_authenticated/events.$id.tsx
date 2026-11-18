@@ -8,7 +8,7 @@ import { ArrowLeft, ExternalLink, MapPin, Trash2, MessageCircle, Megaphone, Chec
 import { supabase } from "@/integrations/supabase/client";
 import { useMe, usePositions } from "@/lib/me";
 import { getOrderDetails } from "@/lib/puree.functions";
-import { fmtDay, hhmm, hkd, shiftHours } from "@/lib/time";
+import { fmtDay, hhmm, hkToday, hkd, shiftHours } from "@/lib/time";
 import { clientChargeForShift, staffCost } from "@/lib/costs";
 import { gingersClientCharge, isGingersPosition } from "@/lib/gingers";
 import { PositionLabel } from "@/components/app/PositionLabel";
@@ -146,6 +146,8 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
   const { data: ot = [] } = useQuery({ queryKey: ["overtime"], queryFn: async () => (await supabase.from("overtime_rates").select("*").order("sort")).data ?? [] });
 
   const refresh = () => { qc.invalidateQueries({ queryKey: ["rows", eventId] }); onChange(); };
+  // Past events are read-only: no calling, adding, removing or confirming staff.
+  const past = ev.day < hkToday();
 
   async function addRow(e: React.FormEvent) {
     e.preventDefault();
@@ -191,7 +193,10 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
   return (
     <>
       <section className="space-y-3">
-        <h2 className="text-xl font-bold">Staffing plan</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="mr-auto text-xl font-bold">Staffing plan</h2>
+          {past && <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Past event · read only</span>}
+        </div>
         {rows.map((r) => {
           const filled = r.invitations.filter((i) => i.status === "accepted" || i.status === "confirmed").length;
           const groups = ["confirmed", "accepted", "invited", "declined", "cancelled", "closed"] as const;
@@ -203,10 +208,10 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
                 <span className="text-sm">{r.quantity} needed</span>
                 <span className="text-sm text-muted-foreground">{hhmm(r.start_time)}–{hhmm(r.end_time)}{r.break_minutes ? ` · ${r.break_minutes} min break` : ""}</span>
                 <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", filled >= r.quantity ? "bg-success/20 text-success" : "bg-warning/30 text-accent-foreground")}>{filled} of {r.quantity} accepted</span>
-                <div className="ml-auto flex gap-1">
+                {!past && <div className="ml-auto flex gap-1">
                   <Button size="sm" onClick={() => setCallRow(r.id)} disabled={filled >= r.quantity}><Megaphone className="h-4 w-4" /> Call staff</Button>
                   <Button size="icon" variant="ghost" onClick={() => delRow(r.id)} aria-label="Remove row"><Trash2 className="h-4 w-4" /></Button>
-                </div>
+                </div>}
               </div>
               {r.invitations.length > 0 && (
                 <div className="mt-3 space-y-1.5">
@@ -216,7 +221,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
                       <span className="font-medium">{i.profiles?.full_name}</span>
                       <span className={cn("rounded-full px-2 py-0.5 text-xs capitalize", STATUS_STYLE[i.status])}>{i.status}{i.mode === "broadcast" && i.status === "invited" ? " · first-come" : ""}</span>
                       {i.decline_reason && <span className="text-xs text-muted-foreground">“{i.decline_reason}”</span>}
-                      <div className="ml-auto flex gap-1">
+                      {!past && <div className="ml-auto flex gap-1">
                         {i.status === "accepted" && <Button size="sm" variant="outline" onClick={() => setStatus(i.id, "confirmed")}><Check className="h-4 w-4" /> Confirm</Button>}
                         {(i.status === "accepted" || i.status === "confirmed" || i.status === "invited") && (
                           <Button size="icon" variant="ghost" onClick={() => setStatus(i.id, "cancelled")} aria-label="Cancel"><X className="h-4 w-4" /></Button>
@@ -226,7 +231,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
                             <MessageCircle className="h-4 w-4" />
                           </a>
                         )}
-                      </div>
+                      </div>}
                     </div>
                   ))}
                 </div>
@@ -235,7 +240,8 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           );
         })}
 
-        <form onSubmit={addRow} className="grid grid-cols-2 gap-2 rounded-xl border border-dashed p-3 sm:grid-cols-[1.5fr_4rem_1fr_1fr_5rem_auto] sm:items-end">
+        {rows.length === 0 && past && <p className="text-sm text-muted-foreground">No staff recorded.</p>}
+        {!past && <form onSubmit={addRow} className="grid grid-cols-2 gap-2 rounded-xl border border-dashed p-3 sm:grid-cols-[1.5fr_4rem_1fr_1fr_5rem_auto] sm:items-end">
           <div className="col-span-2 grid gap-1 sm:col-span-1">
             <Label className="text-xs">Position</Label>
             <Select value={form.position_id} onValueChange={(v) => setForm({ ...form, position_id: v })}>
@@ -248,7 +254,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           <div className="grid gap-1"><Label className="text-xs">End</Label><Input type="time" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} /></div>
           <div className="grid gap-1"><Label className="text-xs">Break (min)</Label><Input type="number" min={0} value={form.break_minutes} onChange={(e) => setForm({ ...form, break_minutes: e.target.value })} /></div>
           <Button type="submit" className="col-span-2 sm:col-span-1">Add</Button>
-        </form>
+        </form>}
       </section>
 
       <section className="space-y-3">
@@ -282,7 +288,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
         {missingRates && <p className="text-xs text-muted-foreground">Some hourly rates are empty — fill them in under <Link to="/settings" className="text-primary underline">Rates</Link>.</p>}
       </section>
 
-      {callRow && (
+      {callRow && !past && (
         <CallStaffDialog
           row={rows.find((r) => r.id === callRow)!}
           ev={ev}
