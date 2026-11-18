@@ -68,7 +68,7 @@ function Page() {
           midnight on a holiday: F&amp;B Manager HK$720/h, Waiter and Commis Chef HK$570/h.
         </p>
         <div className="overflow-x-auto rounded-xl border bg-card">
-          <table className="w-full text-base">
+          <table className="w-full min-w-[640px] text-base">
             <thead className="bg-secondary text-left text-sm font-semibold text-muted-foreground">
               <tr><th className="p-3">Colour</th><th className="p-3">Position</th><th className="p-3">Cost to us / h</th><th className="p-3">Client rate / h</th><th /></tr>
             </thead>
