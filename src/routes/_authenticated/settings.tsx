@@ -65,8 +65,8 @@ function Page() {
         <p className="text-sm text-muted-foreground">
           <span className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>{" "}
           positions (names starting with "Gingers") are paid a flat hourly cost and use Gingers' own after-midnight client rates
-          (F&amp;B Manager HK$290/h, Waiter HK$240/h). On Hong Kong public holidays their fees are doubled (F&amp;B Manager after
-          midnight on a holiday: HK$720/h).
+          (F&amp;B Manager HK$290/h, Waiter and Commis Chef HK$240/h). On Hong Kong public holidays their fees are doubled; after
+          midnight on a holiday: F&amp;B Manager HK$720/h, Waiter and Commis Chef HK$570/h.
         </p>
         <div className="overflow-x-auto rounded-xl border bg-card">
           <table className="w-full text-sm">

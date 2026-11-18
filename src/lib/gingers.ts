@@ -4,8 +4,8 @@ import { splitHours } from "./pay";
  * Gingers staff positions (from Gingers' Puree price list), kept apart from Relish's positions.
  * Rates are HKD per hour. Gingers positions share one colour family (gold, like the Gingers event badge) so they stand out from Relish.
  * - After midnight: the listed after-midnight client rate (when Puree has one).
- * - Public holidays: fees are doubled (client rate and staff cost). Puree lists F&B Manager holiday after
- *   midnight at HK$720, which is used as is.
+ * - Public holidays: fees are doubled (client rate and staff cost). Holiday after-midnight rates are taken from Puree
+ *   as listed (F&B Manager HK$720, Waiter and Commis Chef HK$570).
  */
 export const GINGERS_COLOR = "#b38f12";
 
@@ -13,7 +13,7 @@ export type GingersPosition = {
   name: string;
   color: string;
   sort: number;
-  hourlyCost: number;
+  hourlyCost: number | null;
   clientRate: number;
   afterMidnight?: number;
   holidayAfterMidnight?: number;
@@ -37,6 +37,16 @@ export const GINGERS_POSITIONS: GingersPosition[] = [
     hourlyCost: 150,
     clientRate: 190,
     afterMidnight: 240,
+    holidayAfterMidnight: 570,
+  },
+  {
+    name: "Gingers · Commis Chef",
+    color: "#e6c96b",
+    sort: 104,
+    hourlyCost: null,
+    clientRate: 190,
+    afterMidnight: 240,
+    holidayAfterMidnight: 570,
   },
 ];
 

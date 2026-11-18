@@ -75,6 +75,17 @@ describe("Gingers rates", () => {
       }),
     ).toBe(2400);
   });
+  it("waiter holiday after midnight at 570", () => {
+    expect(
+      gingersClientCharge({
+        position: "Gingers · Waiter",
+        start: "20:00",
+        end: "01:00",
+        clientRate: 190,
+        publicHoliday: true,
+      }),
+    ).toBe(4 * 380 + 570);
+  });
   it("Hong Kong holidays by date, Sundays excluded", () => {
     expect(isPublicHoliday(null, "2026-12-25")).toBe(true);
     expect(isPublicHoliday(null, "2026-11-22")).toBe(false);

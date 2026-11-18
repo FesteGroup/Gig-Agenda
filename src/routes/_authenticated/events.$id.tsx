@@ -271,7 +271,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
         {(holiday || rows.some((r) => isGingersPosition(r.positions?.name))) && (
           <p className="text-xs text-muted-foreground">
             {holiday && <b className="text-foreground">Public holiday: staff costs are doubled{rows.some((r) => isGingersPosition(r.positions?.name)) ? ", and so are Gingers client rates" : ""}. </b>}
-            {rows.some((r) => isGingersPosition(r.positions?.name)) && "Gingers positions use Gingers' after-midnight client rates automatically (F&B Manager HK$290/h, Waiter HK$240/h)."}
+            {rows.some((r) => isGingersPosition(r.positions?.name)) && "Gingers positions use Gingers' after-midnight client rates automatically (F&B Manager HK$290/h, Waiter and Commis Chef HK$240/h; on holidays HK$720/h and HK$570/h)."}
           </p>
         )}
         <div className="grid grid-cols-3 gap-2">
