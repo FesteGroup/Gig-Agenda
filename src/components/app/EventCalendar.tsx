@@ -70,7 +70,7 @@ export function EventCalendar() {
     setSyncing(true);
     try {
       const r = await sync({ data: { from, to } });
-      if (!quiet) toast.success(`Updated from Puree (${r.synced} orders)`);
+      if (!quiet) toast.success(r.fromCopy ? `Updated from the Calendar app's Puree copy of ${r.fromCopy} (${r.synced} orders)` : `Updated from Puree (${r.synced} orders)`);
       r.warnings.forEach((w) => !quiet && toast.warning(w));
       qc.invalidateQueries({ queryKey: ["events"] });
     } catch (e) {

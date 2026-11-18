@@ -15,11 +15,24 @@ export const syncPuree = createServerFn({ method: "POST" })
     const p = await import("./puree.server");
     const warnings: string[] = [];
     let synced = 0;
+    let fromCopy: string | null = null;
+
+    // When Puree can't be read live, use the Calendar app's copy of the Puree orders (refreshed daily).
+    async function useCopy(account: "relish" | "gingers") {
+      const { PUREE_COPY, PUREE_COPY_AT } = await import("./puree-copy.server");
+      const rows = PUREE_COPY.filter((r) => r.account === account && r.day >= data.from && r.day <= data.to).map((r) => ({ source: "puree" as const, ...r }));
+      if (rows.length) {
+        const { error } = await supabase.from("events").upsert(rows, { onConflict: "account,puree_id" });
+        if (error) throw new Error(error.message);
+        synced += rows.length;
+      }
+      fromCopy = PUREE_COPY_AT;
+    }
 
     for (const account of ["relish", "gingers"] as const) {
       const token = p.tokenFor(account, jwtOf());
       if (!token) {
-        warnings.push(`${account === "relish" ? "Relish" : "Gingers"}: no Puree token and no Calendar app link (CALENDAR_APP_URL) set yet`);
+        await useCopy(account);
         continue;
       }
       try {
@@ -56,11 +69,16 @@ export const syncPuree = createServerFn({ method: "POST" })
             /* skip one order */
           }
         }
-      } catch (e) {
-        warnings.push(`${account}: ${(e as Error).message}`);
+      } catch {
+        // Live Puree not reachable (e.g. Calendar app not shared): fall back to the copy.
+        try {
+          await useCopy(account);
+        } catch (e2) {
+          warnings.push(`${account}: ${(e2 as Error).message}`);
+        }
       }
     }
-    return { synced, warnings };
+    return { synced, warnings, fromCopy: fromCopy as string | null };
   });
 
 export const getOrderDetails = createServerFn({ method: "POST" })
