@@ -39,7 +39,7 @@ function Page() {
           const r = i.staffing_rows!;
           const hours = shiftHours(r.start_time, r.end_time, r.break_minutes);
           const rate = i.profiles?.personal_hourly_cost ?? rates.data?.find((x) => x.position_id === r.position_id)?.hourly_cost ?? null;
-          const amount = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rates.data?.find((x) => x.position_id === r.position_id)?.hourly_cost, publicHoliday: isPublicHoliday(i.events!.notes) });
+          const amount = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rates.data?.find((x) => x.position_id === r.position_id)?.hourly_cost, publicHoliday: isPublicHoliday(i.events!.notes, i.events!.day) });
           return { staff: i.profiles?.full_name ?? "", event: i.events!.title, date: i.events!.day, position: r.positions?.name ?? "", hours, rate, amount };
         })
         .sort((a, b) => a.staff.localeCompare(b.staff) || a.date.localeCompare(b.date));

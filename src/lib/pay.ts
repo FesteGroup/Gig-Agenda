@@ -7,7 +7,8 @@ import { minutesOf } from "./time";
  *   After midnight: HK$200 per hour.
  * - Bartenders: HK$200 per hour, HK$300 per hour after midnight.
  * - Mixologists: HK$300 per hour, HK$350 per hour after midnight.
- * - Public holidays (event notes contain "PUBLIC HOLIDAY"): double pay.
+ * - Public holidays (Hong Kong general holidays, Sundays excluded, or event notes containing "PUBLIC HOLIDAY"): double pay.
+ * - Gingers positions ("Gingers · …"): flat hourly cost (no 4-hour block), doubled on public holidays.
  * Other positions use the hourly cost (personal rate first, else the position rate).
  */
 export const SERVER_BLOCK_HOURS = 4;
@@ -46,7 +47,10 @@ export function shiftPay(opts: {
   const { normal, night, total } = splitHours(opts.start, opts.end, opts.breakMinutes ?? 0);
   const kind = kindOf(opts.position);
   let pay: number | null;
-  if (kind === "server") {
+  if (/^gingers\b/i.test((opts.position ?? "").trim())) {
+    const rate = opts.personalRate ?? opts.positionRate;
+    pay = rate == null ? null : Number(rate) * total;
+  } else if (kind === "server") {
     const extra = Number(opts.personalRate ?? opts.positionRate ?? 150);
     const block = SERVER_BLOCK[extra] ?? extra * SERVER_BLOCK_HOURS;
     pay = block + Math.max(0, normal - SERVER_BLOCK_HOURS) * extra + night * NIGHT_RATE["server"]!;
@@ -60,4 +64,14 @@ export function shiftPay(opts: {
   return pay == null ? null : opts.publicHoliday ? pay * 2 : pay;
 }
 
-export const isPublicHoliday = (notes?: string | null) => /public holiday/i.test(notes ?? "");
+/** Hong Kong general holidays other than Sundays (GovHK lists for 2026 and 2027). */
+export const HK_PUBLIC_HOLIDAYS = new Set([
+  "2026-01-01", "2026-02-17", "2026-02-18", "2026-02-19", "2026-04-03", "2026-04-04", "2026-04-06", "2026-04-07",
+  "2026-05-01", "2026-05-25", "2026-06-19", "2026-07-01", "2026-09-26", "2026-10-01", "2026-10-19", "2026-12-25", "2026-12-26",
+  "2027-01-01", "2027-02-06", "2027-02-08", "2027-02-09", "2027-03-26", "2027-03-27", "2027-03-29", "2027-04-05",
+  "2027-05-01", "2027-05-13", "2027-06-09", "2027-07-01", "2027-09-16", "2027-10-01", "2027-10-08", "2027-12-25", "2027-12-27",
+]);
+
+/** Public holiday: a Hong Kong general holiday (not Sundays), or event notes saying "PUBLIC HOLIDAY". */
+export const isPublicHoliday = (notes?: string | null, day?: string | null) =>
+  /public holiday/i.test(notes ?? "") || (!!day && HK_PUBLIC_HOLIDAYS.has(day.slice(0, 10)));

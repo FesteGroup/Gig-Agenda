@@ -10,6 +10,8 @@ import { useMe, usePositions } from "@/lib/me";
 import { getOrderDetails } from "@/lib/puree.functions";
 import { fmtDay, hhmm, hkd, shiftHours } from "@/lib/time";
 import { clientChargeForShift, staffCost } from "@/lib/costs";
+import { gingersClientCharge, isGingersPosition } from "@/lib/gingers";
+import { PositionLabel } from "@/components/app/PositionLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,7 +121,7 @@ function EventPage() {
   );
 }
 
-type EventRow = { id: string; title: string; day: string; venue: string | null; start_time: string | null; notes?: string | null };
+type EventRow = { id: string; title: string; day: string; venue: string | null; start_time: string | null; notes?: string | null; account?: string | null };
 
 function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventRow; onChange: () => void }) {
   const qc = useQueryClient();
@@ -164,20 +166,26 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
   }
 
   const rateOf = (pid: string) => rates.find((r) => r.position_id === pid);
+  const holiday = isPublicHoliday(ev.notes, ev.day);
+  // Gingers events list the Gingers positions first, Relish events the Relish ones.
+  const gingersEvent = ev.account === "gingers";
+  const sortedPositions = [...positions].sort((a, b) => Number(isGingersPosition(b.name) === gingersEvent) - Number(isGingersPosition(a.name) === gingersEvent) || a.sort - b.sort);
   let totalCost = 0, totalCharge = 0, missingRates = false;
-  const costLines: { name: string; position: string; hours: number; cost: number | null }[] = [];
+  const costLines: { name: string; position: string; color: string | undefined; hours: number; cost: number | null }[] = [];
   rows.forEach((r) => {
     const hours = shiftHours(r.start_time, r.end_time, r.break_minutes);
     const rate = rateOf(r.position_id);
     const people = r.invitations.filter((i) => i.status === "confirmed" || i.status === "accepted");
     people.forEach((i) => {
-      const c = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rate?.hourly_cost, publicHoliday: isPublicHoliday(ev.notes) });
+      const c = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rate?.hourly_cost, publicHoliday: holiday });
       if (c == null) missingRates = true;
       totalCost += c ?? 0;
-      costLines.push({ name: i.profiles?.full_name ?? "", position: r.positions?.name ?? "", hours, cost: c });
+      costLines.push({ name: i.profiles?.full_name ?? "", position: r.positions?.name ?? "", color: r.positions?.color, hours, cost: c });
     });
     if (rate?.client_rate == null) missingRates = true;
-    totalCharge += r.quantity * clientChargeForShift(r.start_time, r.end_time, r.break_minutes, Number(rate?.client_rate ?? 0), ot.map((o) => ({ ...o, client_rate: Number(o.client_rate) })), applyOt);
+    totalCharge += r.quantity * (isGingersPosition(r.positions?.name)
+      ? gingersClientCharge({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, clientRate: Number(rate?.client_rate ?? 0), publicHoliday: holiday })
+      : clientChargeForShift(r.start_time, r.end_time, r.break_minutes, Number(rate?.client_rate ?? 0), ot.map((o) => ({ ...o, client_rate: Number(o.client_rate) })), applyOt));
   });
 
   return (
@@ -191,7 +199,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           return (
             <div key={r.id} className="rounded-xl border bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold">{r.positions?.name}</span>
+                <PositionLabel name={r.positions?.name} color={r.positions?.color} className="font-semibold" />
                 <span className="text-sm">{r.quantity} needed</span>
                 <span className="text-sm text-muted-foreground">{hhmm(r.start_time)}–{hhmm(r.end_time)}{r.break_minutes ? ` · ${r.break_minutes} min break` : ""}</span>
                 <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", filled >= r.quantity ? "bg-success/20 text-success" : "bg-warning/30 text-accent-foreground")}>{filled} of {r.quantity} accepted</span>
@@ -232,7 +240,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
             <Label className="text-xs">Position</Label>
             <Select value={form.position_id} onValueChange={(v) => setForm({ ...form, position_id: v })}>
               <SelectTrigger><SelectValue placeholder="Choose" /></SelectTrigger>
-              <SelectContent>{positions.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+              <SelectContent>{sortedPositions.map((p) => <SelectItem key={p.id} value={p.id}><PositionLabel name={p.name} color={p.color} /></SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="grid gap-1"><Label className="text-xs">How many</Label><Input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} /></div>
@@ -254,12 +262,18 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
             <thead className="bg-secondary text-left text-xs text-muted-foreground"><tr><th className="p-2">Person</th><th className="p-2">Position</th><th className="p-2 text-right">Hours</th><th className="p-2 text-right">Cost</th></tr></thead>
             <tbody>
               {costLines.map((l, k) => (
-                <tr key={k} className="border-t"><td className="p-2">{l.name}</td><td className="p-2">{l.position}</td><td className="p-2 text-right">{l.hours.toFixed(1)}</td><td className="p-2 text-right">{hkd(l.cost)}</td></tr>
+                <tr key={k} className="border-t"><td className="p-2">{l.name}</td><td className="p-2"><PositionLabel name={l.position} color={l.color} /></td><td className="p-2 text-right">{l.hours.toFixed(1)}</td><td className="p-2 text-right">{hkd(l.cost)}</td></tr>
               ))}
               {costLines.length === 0 && <tr><td colSpan={4} className="p-3 text-muted-foreground">Costs appear once people accept.</td></tr>}
             </tbody>
           </table>
         </div>
+        {(holiday || rows.some((r) => isGingersPosition(r.positions?.name))) && (
+          <p className="text-xs text-muted-foreground">
+            {holiday && <b className="text-foreground">Public holiday: staff costs are doubled{rows.some((r) => isGingersPosition(r.positions?.name)) ? ", and so are Gingers client rates" : ""}. </b>}
+            {rows.some((r) => isGingersPosition(r.positions?.name)) && "Gingers positions use Gingers' after-midnight client rates automatically (F&B Manager HK$290/h, Waiter HK$240/h)."}
+          </p>
+        )}
         <div className="grid grid-cols-3 gap-2">
           <Stat label="Staff cost" value={hkd(totalCost)} />
           <Stat label="Charge to client" value={hkd(totalCharge)} />

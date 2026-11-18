@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle, Send, Briefcase, Utensils, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { setView, useMe } from "@/lib/me";
+import { useEnsureGingersPositions } from "@/lib/gingers-setup";
 import { cn } from "@/lib/utils";
 
 const officeNav = [
@@ -26,6 +27,7 @@ const staffNav = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { data: me } = useMe();
   const qc = useQueryClient();
+  useEnsureGingersPositions(me?.canOffice);
   const navigate = useNavigate();
   const nav = me?.isOffice ? officeNav : staffNav;
 

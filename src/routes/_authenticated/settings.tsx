@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isGingersPosition, GINGERS_COLOR } from "@/lib/gingers";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Positions & rates — Gig Agenda" }, { name: "description", content: "Hourly costs and client rates." }, { property: "og:title", content: "Positions & rates — Gig Agenda" }, { property: "og:description", content: "Hourly costs and client rates." }] }),
@@ -61,6 +62,12 @@ function Page() {
       <section className="space-y-3">
         <h1 className="text-3xl font-bold">Positions & rates</h1>
         <p className="text-sm text-muted-foreground">Hourly amounts in HKD. Staff never see these.</p>
+        <p className="text-sm text-muted-foreground">
+          <span className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>{" "}
+          positions (names starting with "Gingers") are paid a flat hourly cost and use Gingers' own after-midnight client rates
+          (F&amp;B Manager HK$290/h, Waiter HK$240/h). On Hong Kong public holidays their fees are doubled (F&amp;B Manager after
+          midnight on a holiday: HK$720/h).
+        </p>
         <div className="overflow-x-auto rounded-xl border bg-card">
           <table className="w-full text-sm">
             <thead className="bg-secondary text-left text-xs text-muted-foreground">
@@ -72,7 +79,12 @@ function Page() {
                 return (
                   <tr key={p.id + (r?.hourly_cost ?? "") + (r?.client_rate ?? "")} className="border-t">
                     <td className="p-2"><input type="color" defaultValue={p.color} onBlur={(e) => e.target.value !== p.color && updPos(p.id, { color: e.target.value })} className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent" aria-label="Colour" /></td>
-                    <td className="p-2"><Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} /></td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-2">
+                        {isGingersPosition(p.name) && <span className="rounded px-1 py-px text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: GINGERS_COLOR }}>Gingers</span>}
+                        <Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} />
+                      </div>
+                    </td>
                     <td className="p-2"><Input type="number" defaultValue={r?.hourly_cost ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.hourly_cost ?? null) && updRate(p.id, { hourly_cost: num(e.target.value) })} /></td>
                     <td className="p-2"><Input type="number" defaultValue={r?.client_rate ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.client_rate ?? null) && updRate(p.id, { client_rate: num(e.target.value) })} /></td>
                     <td className="p-2"><Button size="icon" variant="ghost" onClick={() => delPos(p.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button></td>
