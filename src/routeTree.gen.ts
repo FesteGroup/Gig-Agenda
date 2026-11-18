@@ -14,10 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAvailabilityRouteImport } from './routes/_authenticated/availability'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
-import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedExpensesRouteImport } from './routes/_authenticated/expenses'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedInvitationsRouteImport } from './routes/_authenticated/invitations'
+import { Route as AuthenticatedInviteRouteImport } from './routes/_authenticated/invite'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -50,11 +50,6 @@ const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
   path: '/board',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedExpensesRoute = AuthenticatedExpensesRouteImport.update({
   id: '/expenses',
   path: '/expenses',
@@ -71,6 +66,11 @@ const AuthenticatedInvitationsRoute =
     path: '/invitations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInviteRoute = AuthenticatedInviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -108,10 +108,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/availability': typeof AuthenticatedAvailabilityRoute
   '/board': typeof AuthenticatedBoardRoute
-  '/demo': typeof AuthenticatedDemoRoute
   '/expenses': typeof AuthenticatedExpensesRoute
   '/home': typeof AuthenticatedHomeRoute
   '/invitations': typeof AuthenticatedInvitationsRoute
+  '/invite': typeof AuthenticatedInviteRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/payroll': typeof AuthenticatedPayrollRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -124,10 +124,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/availability': typeof AuthenticatedAvailabilityRoute
   '/board': typeof AuthenticatedBoardRoute
-  '/demo': typeof AuthenticatedDemoRoute
   '/expenses': typeof AuthenticatedExpensesRoute
   '/home': typeof AuthenticatedHomeRoute
   '/invitations': typeof AuthenticatedInvitationsRoute
+  '/invite': typeof AuthenticatedInviteRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/payroll': typeof AuthenticatedPayrollRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -142,10 +142,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/availability': typeof AuthenticatedAvailabilityRoute
   '/_authenticated/board': typeof AuthenticatedBoardRoute
-  '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/expenses': typeof AuthenticatedExpensesRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/invitations': typeof AuthenticatedInvitationsRoute
+  '/_authenticated/invite': typeof AuthenticatedInviteRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -160,10 +160,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/availability'
     | '/board'
-    | '/demo'
     | '/expenses'
     | '/home'
     | '/invitations'
+    | '/invite'
     | '/notifications'
     | '/payroll'
     | '/settings'
@@ -176,10 +176,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/availability'
     | '/board'
-    | '/demo'
     | '/expenses'
     | '/home'
     | '/invitations'
+    | '/invite'
     | '/notifications'
     | '/payroll'
     | '/settings'
@@ -193,10 +193,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/availability'
     | '/_authenticated/board'
-    | '/_authenticated/demo'
     | '/_authenticated/expenses'
     | '/_authenticated/home'
     | '/_authenticated/invitations'
+    | '/_authenticated/invite'
     | '/_authenticated/notifications'
     | '/_authenticated/payroll'
     | '/_authenticated/settings'
@@ -248,13 +248,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/demo': {
-      id: '/_authenticated/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof AuthenticatedDemoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/expenses': {
       id: '/_authenticated/expenses'
       path: '/expenses'
@@ -274,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/invitations'
       fullPath: '/invitations'
       preLoaderRoute: typeof AuthenticatedInvitationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invite': {
+      id: '/_authenticated/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof AuthenticatedInviteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -324,10 +324,10 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAvailabilityRoute: typeof AuthenticatedAvailabilityRoute
   AuthenticatedBoardRoute: typeof AuthenticatedBoardRoute
-  AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedExpensesRoute: typeof AuthenticatedExpensesRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedInvitationsRoute: typeof AuthenticatedInvitationsRoute
+  AuthenticatedInviteRoute: typeof AuthenticatedInviteRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -339,10 +339,10 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAvailabilityRoute: AuthenticatedAvailabilityRoute,
   AuthenticatedBoardRoute: AuthenticatedBoardRoute,
-  AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedExpensesRoute: AuthenticatedExpensesRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedInvitationsRoute: AuthenticatedInvitationsRoute,
+  AuthenticatedInviteRoute: AuthenticatedInviteRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,

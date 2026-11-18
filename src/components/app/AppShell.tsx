@@ -14,7 +14,7 @@ const officeNav = [
   { to: "/staff", label: "Staff", icon: Users, colour: "bg-violet", text: "text-violet" },
   { to: "/payroll", label: "Reports", icon: FileSpreadsheet, colour: "bg-sun", text: "text-sun" },
   { to: "/expenses", label: "Expenses", icon: Receipt, colour: "bg-rose", text: "text-rose" },
-  { to: "/demo", label: "Demo", icon: Send, colour: "bg-teal", text: "text-teal" },
+  { to: "/invite", label: "Invitations", icon: Send, colour: "bg-teal", text: "text-teal" },
   { to: "/settings", label: "Rates", icon: Settings, colour: "bg-success", text: "text-success" },
 ] as const;
 
