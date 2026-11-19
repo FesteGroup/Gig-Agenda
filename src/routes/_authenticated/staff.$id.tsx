@@ -118,7 +118,7 @@ function Page() {
           <>
             <div className="grid gap-1.5"><Label>Personal hourly cost (HKD, overrides position)</Label><Input type="number" value={f.personal_hourly_cost ?? ""} onChange={(e) => setF({ ...f, personal_hourly_cost: e.target.value === "" ? null : Number(e.target.value) })} /></div>
             <div className="grid gap-1.5"><Label>Office notes (staff can't see)</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
-            <div className="flex items-center gap-2"><Switch checked={f.active} onCheckedChange={(v) => setF({ ...f, active: v })} id="active" /><Label htmlFor="active">Active</Label></div>
+            <div className="flex items-center gap-2"><Switch checked={f.active} onCheckedChange={(v) => setF({ ...f, active: v })} id="active" /><Label htmlFor="active">Show</Label></div>
             {me?.id !== id && <div className="flex items-center gap-2"><Switch checked={!!data?.isOffice} onCheckedChange={toggleOffice} id="off" /><Label htmlFor="off">Office access</Label></div>}
           </>
         )}
