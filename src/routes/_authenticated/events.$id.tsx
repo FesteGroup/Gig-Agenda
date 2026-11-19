@@ -102,7 +102,7 @@ function EventPage() {
         </details>
       ) : null}
 
-      <section className="space-y-2">
+      {!me.isOffice && <section className="space-y-2">
         <h2 className="text-xl font-bold">Team</h2>
         {team.length === 0 ? <p className="text-sm text-muted-foreground">No one confirmed yet.</p> : (
           <div className="grid gap-2 sm:grid-cols-2">
@@ -114,7 +114,7 @@ function EventPage() {
             ))}
           </div>
         )}
-      </section>
+      </section>}
 
       {me.isOffice && <OfficeStaffing eventId={id} ev={ev} onChange={() => { qc.invalidateQueries({ queryKey: ["team", id] }); qc.invalidateQueries({ queryKey: ["events"] }); }} />}
     </div>
@@ -173,7 +173,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
   const gingersEvent = ev.account === "gingers";
   const sortedPositions = [...positions].sort((a, b) => Number(isGingersPosition(b.name) === gingersEvent) - Number(isGingersPosition(a.name) === gingersEvent) || a.sort - b.sort);
   let totalCost = 0, totalCharge = 0, missingRates = false;
-  const costLines: { name: string; position: string; color: string | undefined; hours: number; cost: number | null }[] = [];
+  const costLines: { id: string; name: string; photo: string | null | undefined; position: string; color: string | undefined; start: string; end: string; hours: number; cost: number | null }[] = [];
   rows.forEach((r) => {
     const hours = shiftHours(r.start_time, r.end_time, r.break_minutes);
     const rate = rateOf(r.position_id);
@@ -182,7 +182,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
       const c = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rate?.hourly_cost, publicHoliday: holiday });
       if (c == null) missingRates = true;
       totalCost += c ?? 0;
-      costLines.push({ name: i.profiles?.full_name ?? "", position: r.positions?.name ?? "", color: r.positions?.color, hours, cost: c });
+      costLines.push({ id: i.id, name: i.profiles?.full_name ?? "", photo: i.profiles?.photo_url, position: r.positions?.name ?? "", color: r.positions?.color, start: r.start_time, end: r.end_time, hours, cost: c });
     });
     if (rate?.client_rate == null) missingRates = true;
     totalCharge += r.quantity * (isGingersPosition(r.positions?.name)
@@ -192,10 +192,26 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
 
   return (
     <>
-      <section className="space-y-3">
+      {/* One list of people: past events show who worked (read only), upcoming events the staffing plan. */}
+      {past && <section className="space-y-2">
+        <div className="flex items-center gap-2">
+          <h2 className="mr-auto text-xl font-bold">Team</h2>
+          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Past event · read only</span>
+        </div>
+        {costLines.length === 0 ? <p className="text-sm text-muted-foreground">No staff recorded.</p> : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {costLines.map((l) => (
+              <div key={l.id} className="flex items-center gap-3 rounded-lg border bg-card p-2">
+                <Avatar name={l.name} url={l.photo ?? null} />
+                <div className="text-sm"><div className="font-semibold">{l.name}</div><div className="text-muted-foreground"><PositionLabel name={l.position} color={l.color} /> · {hhmm(l.start)}–{hhmm(l.end)} · {l.hours.toFixed(1)} h · {hkd(l.cost)}</div></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>}
+      {!past && <section className="space-y-3">
         <div className="flex items-center gap-2">
           <h2 className="mr-auto text-xl font-bold">Staffing plan</h2>
-          {past && <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Past event · read only</span>}
         </div>
         {rows.map((r) => {
           const filled = r.invitations.filter((i) => i.status === "accepted" || i.status === "confirmed").length;
@@ -205,7 +221,6 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
             <div key={r.id} className="rounded-xl border bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <PositionLabel name={r.positions?.name} color={r.positions?.color} className="font-semibold" />
-                <span className="text-sm">{r.quantity} needed</span>
                 <span className="text-sm text-muted-foreground">{hhmm(r.start_time)}–{hhmm(r.end_time)}{r.break_minutes ? ` · ${r.break_minutes} min break` : ""}</span>
                 <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", filled >= r.quantity ? "bg-success/20 text-success" : "bg-warning/30 text-accent-foreground")}>{filled} of {r.quantity} accepted</span>
                 {!past && <div className="ml-auto flex gap-1">
@@ -221,6 +236,7 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
                       <span className="font-medium">{i.profiles?.full_name}</span>
                       <span className={cn("rounded-full px-2 py-0.5 text-xs capitalize", STATUS_STYLE[i.status])}>{i.status}{i.mode === "broadcast" && i.status === "invited" ? " · first-come" : ""}</span>
                       {i.decline_reason && <span className="text-xs text-muted-foreground">“{i.decline_reason}”</span>}
+                      {(() => { const l = costLines.find((x) => x.id === i.id); return l ? <span className="text-xs text-muted-foreground">{l.hours.toFixed(1)} h · {hkd(l.cost)}</span> : null; })()}
                       {!past && <div className="ml-auto flex gap-1">
                         {i.status === "accepted" && <Button size="sm" variant="outline" onClick={() => setStatus(i.id, "confirmed")}><Check className="h-4 w-4" /> Confirm</Button>}
                         {(i.status === "accepted" || i.status === "confirmed" || i.status === "invited") && (
@@ -240,7 +256,6 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           );
         })}
 
-        {rows.length === 0 && past && <p className="text-sm text-muted-foreground">No staff recorded.</p>}
         {!past && <form onSubmit={addRow} className="grid grid-cols-2 gap-2 rounded-xl border border-dashed p-3 sm:grid-cols-[1.5fr_4rem_1fr_1fr_5rem_auto] sm:items-end">
           <div className="col-span-2 grid gap-1 sm:col-span-1">
             <Label className="text-xs">Position</Label>
@@ -255,24 +270,13 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           <div className="grid gap-1"><Label className="text-xs">Break (min)</Label><Input type="number" min={0} value={form.break_minutes} onChange={(e) => setForm({ ...form, break_minutes: e.target.value })} /></div>
           <Button type="submit" className="col-span-2 sm:col-span-1">Add</Button>
         </form>}
-      </section>
+      </section>}
 
       <section className="space-y-3">
         <div className="flex items-center gap-3">
           <h2 className="mr-auto text-xl font-bold">Costs</h2>
           <Switch id="ot" checked={applyOt} onCheckedChange={setApplyOt} />
           <Label htmlFor="ot" className="text-sm">After-midnight rates</Label>
-        </div>
-        <div className="overflow-x-auto rounded-xl border bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary text-left text-xs text-muted-foreground"><tr><th className="p-2">Person</th><th className="p-2">Position</th><th className="p-2 text-right">Hours</th><th className="p-2 text-right">Cost</th></tr></thead>
-            <tbody>
-              {costLines.map((l, k) => (
-                <tr key={k} className="border-t"><td className="p-2">{l.name}</td><td className="p-2"><PositionLabel name={l.position} color={l.color} /></td><td className="p-2 text-right">{l.hours.toFixed(1)}</td><td className="p-2 text-right">{hkd(l.cost)}</td></tr>
-              ))}
-              {costLines.length === 0 && <tr><td colSpan={4} className="p-3 text-muted-foreground">Costs appear once people accept.</td></tr>}
-            </tbody>
-          </table>
         </div>
         {(holiday || rows.some((r) => isGingersPosition(r.positions?.name))) && (
           <p className="text-xs text-muted-foreground">
