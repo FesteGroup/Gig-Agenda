@@ -42,13 +42,16 @@ function InvitePage() {
   const { data: events = [] } = useQuery({
     queryKey: ["invite-events", today, horizon],
     queryFn: async () => {
-      const { data } = await supabase.from("events").select("id,day,title,client_name,start_time,state,account,reference,source,venue").gte("day", today).lte("day", horizon).order("day").order("start_time");
+      const { data } = await supabase.from("events").select("id,day,title,client_name,start_time,state,account,reference,source,venue,pax").gte("day", today).lte("day", horizon).order("day").order("start_time");
       return (data ?? []).filter((e) => e.source === "manual" || ACTIVE.includes(String(e.state ?? "").toLowerCase()));
     },
   });
 
-  const [picked, setPicked] = useState<string[]>([]);
-  const [eventFor, setEventFor] = useState<Record<string, string>>({});
+  // Chosen events; their days drive the availability check.
+  const [pickedEvents, setPickedEvents] = useState<string[]>([]);
+  const chosenEvents = events.filter((e) => pickedEvents.includes(e.id));
+  const picked = [...new Set(chosenEvents.map((e) => e.day))].sort();
+  const eventDays = [...new Set(events.map((e) => e.day))];
   const [positionId, setPositionId] = useState("");
   const [start, setStart] = useState("17:30");
   const [end, setEnd] = useState("22:30");
@@ -56,8 +59,6 @@ function InvitePage() {
   const [chosen, setChosen] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
-  // Default the event of a picked day to its only event.
-  const eventOf = (d: string) => eventFor[d] ?? (events.filter((e) => e.day === d).length === 1 ? events.find((e) => e.day === d)!.id : "");
 
   const { data: people } = useQuery({
     queryKey: ["invite-people", picked.join(",")],
@@ -91,15 +92,13 @@ function InvitePage() {
     p.personal_hourly_cost ?? rates.find((r) => r.position_id === positionId)?.hourly_cost ?? null;
 
   async function send() {
-    if (!picked.length || !chosen.length || !positionId) return toast.error("Pick the dates, the position and at least one person");
-    const missing = picked.filter((d) => !eventOf(d));
-    if (missing.length) return toast.error(`Choose the event for ${missing.map((d) => fmtDay(d)).join(", ")}`);
+    if (!chosenEvents.length || !chosen.length || !positionId) return toast.error("Pick the position, the events and at least one person");
     setBusy(true);
     try {
       const deadline = new Date(Date.now() + Number(replyHours || 24) * 3600_000).toISOString();
       let sent = 0;
-      for (const d of picked) {
-        const eventId = eventOf(d);
+      for (const ev of chosenEvents) {
+        const eventId = ev.id;
         // Same position and hours on the event: reuse that shift and make room for the people invited.
         const { data: rows } = await supabase.from("staffing_rows").select("id,quantity,start_time,end_time").eq("event_id", eventId).eq("position_id", positionId);
         let row = (rows ?? []).find((r) => hhmm(r.start_time) === start && hhmm(r.end_time) === end);
@@ -138,56 +137,59 @@ function InvitePage() {
 
         <TabsContent value="send" className="space-y-4">
           <section className="space-y-2 rounded-xl border bg-card p-4">
-            <h2 className="font-semibold">1. Dates and event</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {days.map((d) => {
-                const n = events.filter((e) => e.day === d).length;
-                const on = picked.includes(d);
-                return (
-                  <button
-                    key={d}
-                    onClick={() => setPicked((p) => (on ? p.filter((x) => x !== d) : [...p, d].sort()))}
-                    className={cn("min-w-16 rounded-lg border px-2 py-1 text-xs", on ? "border-primary bg-primary text-primary-foreground" : n ? "hover:bg-secondary" : "text-muted-foreground hover:bg-secondary")}
-                  >
-                    <div className="font-medium">{parseDay(d).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</div>
-                    <div className={cn("text-[10px]", on ? "opacity-90" : "text-muted-foreground")}>{n ? `${n} event${n === 1 ? "" : "s"}` : "—"}</div>
-                  </button>
-                );
-              })}
+            <h2 className="font-semibold">1. Position and hours</h2>
+            <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-end">
+              <div className="space-y-1"><Label>Position</Label>
+                <Select value={positionId} onValueChange={(v) => { setPositionId(v); setChosen([]); }}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Choose" /></SelectTrigger>
+                  <SelectContent>{sortedPositions.map((p) => <SelectItem key={p.id} value={p.id}><PositionLabel name={p.name} color={p.color} /></SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1"><Label>From</Label><Input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="w-full" /></div>
+              <div className="space-y-1"><Label>To</Label><Input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="w-full" /></div>
+              <div className="space-y-1"><Label>Reply within (hours)</Label><Input type="number" min={1} value={replyHours} onChange={(e) => setReplyHours(e.target.value)} className="w-full" /></div>
+              <span className="pb-2 text-sm font-medium text-muted-foreground">{shiftHours(start, end).toFixed(1)} h</span>
             </div>
-            {picked.map((d) => {
-              const list = events.filter((e) => e.day === d);
-              return (
-                <div key={d} className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="w-32 font-medium">{fmtDay(d)}</span>
-                  {list.length ? (
-                    <Select value={eventOf(d) || "none"} onValueChange={(v) => setEventFor((m) => ({ ...m, [d]: v === "none" ? "" : v }))}>
-                      <SelectTrigger className="w-96"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Choose the event…</SelectItem>
-                        {list.map((e) => <SelectItem key={e.id} value={e.id}>{e.source === "manual" ? "M" : e.account === "gingers" ? "G" : "R"}{e.reference ? ` #${e.reference}` : ""} · {e.client_name ?? e.title}{e.start_time ? ` · ${hhmm(e.start_time)}` : ""}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <span className="text-muted-foreground">No event this day – add one on the <Link to="/home" className="underline">Events</Link> page.</span>
-                  )}
-                </div>
-              );
-            })}
           </section>
 
-          <section className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
-            <h2 className="w-full font-semibold">2. Position and hours</h2>
-            <div className="space-y-1"><Label>Position</Label>
-              <Select value={positionId} onValueChange={(v) => { setPositionId(v); setChosen([]); }}>
-                <SelectTrigger className="w-56"><SelectValue placeholder="Choose" /></SelectTrigger>
-                <SelectContent>{sortedPositions.map((p) => <SelectItem key={p.id} value={p.id}><PositionLabel name={p.name} color={p.color} /></SelectItem>)}</SelectContent>
-              </Select>
+          <section className="space-y-3 rounded-xl border bg-card p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="mr-auto font-semibold">2. Events</h2>
+              {pickedEvents.length > 0 && <Button variant="ghost" size="sm" onClick={() => setPickedEvents([])}>Clear ({pickedEvents.length})</Button>}
             </div>
-            <div className="space-y-1"><Label>From</Label><Input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="w-32" /></div>
-            <div className="space-y-1"><Label>To</Label><Input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="w-32" /></div>
-            <div className="space-y-1"><Label>Reply within (hours)</Label><Input type="number" min={1} value={replyHours} onChange={(e) => setReplyHours(e.target.value)} className="w-28" /></div>
-            <span className="pb-2 text-sm text-muted-foreground">{shiftHours(start, end).toFixed(1)} h</span>
+            {!eventDays.length && <p className="text-sm text-muted-foreground">No confirmed events in the next 4 weeks. Add one on the <Link to="/home" className="underline">Events</Link> page.</p>}
+            <div className="space-y-4">
+              {eventDays.map((d) => (
+                <div key={d} className="grid gap-2 md:grid-cols-[7rem_1fr]">
+                  <div className="pt-2">
+                    <div className="text-sm font-bold">{parseDay(d).toLocaleDateString("en-GB", { weekday: "long" })}</div>
+                    <div className="text-sm text-muted-foreground">{parseDay(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {events.filter((e) => e.day === d).map((e) => {
+                      const on = pickedEvents.includes(e.id);
+                      return (
+                        <button
+                          key={e.id}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => setPickedEvents((x) => (on ? x.filter((y) => y !== e.id) : [...x, e.id]))}
+                          className={cn("rounded-xl border p-3 text-left transition-colors", on ? "border-primary bg-primary/10 ring-2 ring-primary" : "hover:bg-secondary")}
+                        >
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="rounded-full border px-2 py-0.5 font-semibold">{e.source === "manual" ? "Manual" : e.account === "gingers" ? "Gingers" : "Relish"}</span>
+                            {e.reference && <span className="text-muted-foreground">#{e.reference}</span>}
+                            {e.start_time && <span className="ml-auto font-semibold">{hhmm(e.start_time)}</span>}
+                          </div>
+                          <div className="mt-1.5 truncate font-semibold">{e.client_name ?? e.title}</div>
+                          <div className="truncate text-xs text-muted-foreground">{[e.client_name && e.title !== e.client_name ? e.title : null, e.pax ? `${e.pax} guests` : null, e.venue].filter(Boolean).join(" · ") || "\u00a0"}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
 
           <section className="space-y-2 rounded-xl border bg-card p-4">
@@ -196,7 +198,7 @@ function InvitePage() {
               <Button variant="ghost" size="sm" disabled={!picked.length} onClick={() => setChosen(eligible.filter((w) => picked.every((d) => fits(w.id, d))).map((w) => w.id))}>Select everyone available</Button>
             </div>
             {!positionId && <p className="text-sm text-muted-foreground">Choose a position to see the staff who do it.</p>}
-            {positionId && !picked.length && <p className="text-sm text-muted-foreground">Pick dates to see who is available.</p>}
+            {positionId && !picked.length && <p className="text-sm text-muted-foreground">Pick events to see who is available.</p>}
             {positionId && (
               <div className="overflow-x-auto">
                 <table className="text-sm">
@@ -224,7 +226,7 @@ function InvitePage() {
               </div>
             )}
             <Button onClick={send} disabled={busy || !picked.length || !chosen.length || !positionId} className="gap-1.5">
-              <Send className="h-4 w-4" />{busy ? "Sending…" : `Send ${chosen.length * picked.length || ""} invitation${chosen.length * picked.length === 1 ? "" : "s"}`}
+              <Send className="h-4 w-4" />{busy ? "Sending…" : `Send ${chosen.length * chosenEvents.length || ""} invitation${chosen.length * chosenEvents.length === 1 ? "" : "s"}`}
             </Button>
           </section>
         </TabsContent>
