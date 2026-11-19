@@ -52,26 +52,6 @@ export function InvitationCard({ inv, all = [] }: { inv: MyInvitation; all?: MyI
             ? "Declined"
             : "Cancelled",
       );
-    if (accept && !error) {
-      // The worker is now busy at this time: other open invitations that overlap are declined (the office is told).
-      const others = all.filter(
-        (o) =>
-          o.status === "invited" &&
-          o.id !== inv.id &&
-          clashingGig(o, [{ ...inv, status: "accepted" }]),
-      );
-      for (const o of others) {
-        await supabase.rpc("respond_invitation", {
-          _id: o.id,
-          _accept: false,
-          _reason: `Booked at that time on ${e.title}`,
-        });
-      }
-      if (others.length)
-        toast.info(
-          `${others.length} other invitation${others.length === 1 ? "" : "s"} at the same time declined`,
-        );
-    }
     setDeclining(false);
     qc.invalidateQueries({ queryKey: ["my-invitations"] });
   }

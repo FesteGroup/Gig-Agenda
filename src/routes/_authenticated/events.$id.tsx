@@ -8,7 +8,7 @@ import { ArrowLeft, ExternalLink, MapPin, Trash2, MessageCircle, Megaphone, Chec
 import { supabase } from "@/integrations/supabase/client";
 import { useMe, usePositions } from "@/lib/me";
 import { getOrderDetails } from "@/lib/puree.functions";
-import { fmtDay, hhmm, hkToday, hkd, shiftHours } from "@/lib/time";
+import { fmtDay, hhmm, hkToday, hkd, neighbourDays, shiftHours, shiftsClash } from "@/lib/time";
 import { clientChargeForShift, staffCost } from "@/lib/costs";
 import { gingersClientCharge, isGingersPosition } from "@/lib/gingers";
 import { PositionLabel } from "@/components/app/PositionLabel";
@@ -142,6 +142,25 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
       return data;
     },
   });
+  // Invited people who meanwhile took another gig at the same time: shown as "booked elsewhere", not declined.
+  const { data: busyElsewhere = [] } = useQuery({
+    queryKey: ["busy-elsewhere", eventId, ev.day],
+    queryFn: async () =>
+      (
+        await supabase
+          .from("invitations")
+          .select("user_id,staffing_row_id,staffing_rows!inner(start_time,end_time),events!inner(day,title)")
+          .in("events.day", [ev.day, ...neighbourDays(ev.day)])
+          .in("status", ["accepted", "confirmed"])
+      ).data ?? [],
+  });
+  const bookedElsewhere = (userId: string, rowId: string, start: string, end: string) =>
+    busyElsewhere.find(
+      (b) =>
+        b.user_id === userId &&
+        b.staffing_row_id !== rowId &&
+        shiftsClash({ day: b.events.day, start: b.staffing_rows.start_time, end: b.staffing_rows.end_time }, { day: ev.day, start, end }),
+    );
   const { data: rates = [] } = useQuery({ queryKey: ["rates"], queryFn: async () => (await supabase.from("position_rates").select("*")).data ?? [] });
   const { data: ot = [] } = useQuery({ queryKey: ["overtime"], queryFn: async () => (await supabase.from("overtime_rates").select("*").order("sort")).data ?? [] });
 
@@ -234,7 +253,16 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
                     <div key={i.id} className="flex flex-wrap items-center gap-2 text-sm">
                       <Avatar name={i.profiles?.full_name ?? "?"} url={i.profiles?.photo_url} size={28} />
                       <span className="font-medium">{i.profiles?.full_name}</span>
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs capitalize", STATUS_STYLE[i.status])}>{i.status}{i.mode === "broadcast" && i.status === "invited" ? " · first-come" : ""}</span>
+                      {(() => {
+                        const busy = i.status === "invited" ? bookedElsewhere(i.user_id, r.id, r.start_time, r.end_time) : undefined;
+                        return busy ? (
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground" title={`Accepted ${busy.events.title} at an overlapping time`}>
+                            booked elsewhere · {busy.events.title}
+                          </span>
+                        ) : (
+                          <span className={cn("rounded-full px-2 py-0.5 text-xs capitalize", STATUS_STYLE[i.status])}>{i.status}{i.mode === "broadcast" && i.status === "invited" ? " · first-come" : ""}</span>
+                        );
+                      })()}
                       {i.decline_reason && <span className="text-xs text-muted-foreground">“{i.decline_reason}”</span>}
                       {(() => { const l = costLines.find((x) => x.id === i.id); return l ? <span className="text-xs text-muted-foreground">{l.hours.toFixed(1)} h · {hkd(l.cost)}</span> : null; })()}
                       {!past && <div className="ml-auto flex gap-1">
