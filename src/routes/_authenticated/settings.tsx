@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,12 +20,13 @@ function Page() {
   const { data } = useQuery({
     queryKey: ["settings"],
     queryFn: async () => {
-      const [p, r, o] = await Promise.all([
+      const [p, r, o, w] = await Promise.all([
         supabase.from("positions").select("*").order("sort"),
         supabase.from("position_rates").select("*"),
         supabase.from("overtime_rates").select("*").order("sort"),
+        supabase.from("profiles").select("id,full_name,main_position_id,personal_hourly_cost").eq("active", true).order("full_name"),
       ]);
-      return { positions: p.data ?? [], rates: r.data ?? [], ot: o.data ?? [] };
+      return { positions: p.data ?? [], rates: r.data ?? [], ot: o.data ?? [], workers: w.data ?? [] };
     },
   });
   const [newName, setNewName] = useState("");
@@ -38,6 +39,12 @@ function Page() {
   async function updRate(position_id: string, patch: { hourly_cost?: number | null; client_rate?: number | null }) {
     const { error } = await supabase.from("position_rates").upsert({ position_id, ...patch });
     if (error) toast.error(error.message); else refresh();
+  }
+  // A worker's personal hourly rate (empty = the position's rate). Shown under their main position.
+  async function updWorker(id: string, personal_hourly_cost: number | null) {
+    const { error } = await supabase.from("profiles").update({ personal_hourly_cost }).eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Personal rate saved"); refresh(); qc.invalidateQueries({ queryKey: ["staff"] }); }
   }
   async function addPos() {
     if (!newName.trim()) return;
@@ -74,8 +81,10 @@ function Page() {
             <tbody>
               {data?.positions.map((p) => {
                 const r = data.rates.find((x) => x.position_id === p.id);
+                const workers = data.workers.filter((w) => w.main_position_id === p.id);
                 return (
-                  <tr key={p.id + (r?.hourly_cost ?? "") + (r?.client_rate ?? "")} className="border-t">
+                  <Fragment key={p.id + (r?.hourly_cost ?? "") + (r?.client_rate ?? "")}>
+                  <tr className="border-t">
                     <td className="p-3"><input type="color" defaultValue={p.color} onBlur={(e) => e.target.value !== p.color && updPos(p.id, { color: e.target.value })} className="h-11 w-16 cursor-pointer rounded border-0 bg-transparent" aria-label="Colour" /></td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
@@ -94,11 +103,37 @@ function Page() {
                     <td className="p-3"><Input type="number" defaultValue={r?.client_rate ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.client_rate ?? null) && updRate(p.id, { client_rate: num(e.target.value) })} className="h-11 text-base md:text-base" /></td>
                     <td className="p-3"><Button size="icon" variant="ghost" onClick={() => delPos(p.id)} aria-label="Delete" className="h-11 w-11"><Trash2 className="h-5 w-5" /></Button></td>
                   </tr>
+                  {workers.length > 0 && (
+                    <tr>
+                      <td />
+                      <td colSpan={4} className="px-3 pb-3">
+                        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                          {workers.map((w) => (
+                            <label key={w.id + (w.personal_hourly_cost ?? "")} className="flex items-center gap-2 rounded-lg border bg-background px-2 py-1 text-sm">
+                              <span className="min-w-0 flex-1 truncate">{w.full_name}</span>
+                              <Input
+                                type="number"
+                                min={0}
+                                defaultValue={w.personal_hourly_cost ?? ""}
+                                placeholder={r?.hourly_cost != null ? String(r.hourly_cost) : "—"}
+                                onBlur={(e) => num(e.target.value) !== (w.personal_hourly_cost ?? null) && updWorker(w.id, num(e.target.value))}
+                                className="h-8 w-20 text-right"
+                                aria-label={`${w.full_name} hourly rate`}
+                              />
+                              <span className="text-xs text-muted-foreground">/h</span>
+                            </label>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-muted-foreground">Under each position: its workers and their personal hourly rate. Leave it empty to use the position's cost; the personal rate applies to every position the worker does.</p>
         <div className="flex gap-2"><Input placeholder="New position" value={newName} onChange={(e) => setNewName(e.target.value)} className="max-w-xs" /><Button onClick={addPos}>Add</Button></div>
       </section>
 
