@@ -201,7 +201,7 @@ function MyExpenses({ userId, name }: { userId: string; name: string }) {
 // ── Office ─────────────────────────────────────────────────────────────
 function OfficeExpenses() {
   const qc = useQueryClient();
-  const [status, setStatus] = useState<"open" | Status | "all">("open");
+  const [status, setStatus] = useState<Status | "all">("submitted");
   const [who, setWho] = useState("all");
   const { data, error } = useQuery({
     queryKey: ["expenses"],
@@ -216,7 +216,7 @@ function OfficeExpenses() {
 
   const all = data ?? [];
   const people = [...new Map(all.map((x) => [x.user_id, x.profiles?.full_name ?? "?"])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  const list = all.filter((x) => (who === "all" || x.user_id === who) && (status === "all" || (status === "open" ? x.status === "submitted" || x.status === "approved" : x.status === status)));
+  const list = all.filter((x) => (who === "all" || x.user_id === who) && (status === "all" || x.status === status));
   const sum = (s: Status) => all.filter((x) => x.status === s).reduce((t, x) => t + Number(x.amount), 0);
 
   async function update(x: Expense, s: Status) {
@@ -260,7 +260,6 @@ function OfficeExpenses() {
       </div>
       <div className="flex flex-wrap gap-2 text-sm">
         {([
-          ["open", `To handle ${hkd(sum("submitted") + sum("approved"))}`],
           ["submitted", `Waiting ${hkd(sum("submitted"))}`],
           ["approved", `Approved, to pay ${hkd(sum("approved"))}`],
           ["paid", `Paid ${hkd(sum("paid"))}`],
@@ -292,7 +291,7 @@ function OfficeExpenses() {
                     {x.status === "submitted" && <Button size="sm" variant="outline" onClick={() => update(x, "approved")}><Check className="h-4 w-4" />Approve</Button>}
                     {(x.status === "submitted" || x.status === "approved") && <Button size="sm" onClick={() => update(x, "paid")}><Banknote className="h-4 w-4" />Paid</Button>}
                     {x.status === "submitted" && <Button size="sm" variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => update(x, "rejected")}>Reject</Button>}
-                    {x.status !== "submitted" && <Button size="sm" variant="ghost" onClick={() => update(x, "submitted")} title="Back to Waiting"><Undo2 className="h-4 w-4" />Undo</Button>}
+                    {(x.status === "approved" || x.status === "rejected") && <Button size="sm" variant="ghost" onClick={() => update(x, "submitted")} title="Back to Waiting"><Undo2 className="h-4 w-4" />Undo</Button>}
                   </div>
                 </td>
               </tr>
