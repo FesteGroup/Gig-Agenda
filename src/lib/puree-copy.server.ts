@@ -1,7 +1,7 @@
-// Copy of the Relish and Gingers Puree orders from the Calendar app (all states), copied 2026-11-18.
+// Copy of the Relish and Gingers Puree orders from the Calendar app (all states), copied 2026-11-20.
 // Server-only. Used by syncPuree when Puree can't be read live (no token / Calendar link). Refreshed daily
 // with scripts/copy-puree-from-calendar.mts.
-export const PUREE_COPY_AT = "2026-11-18";
+export const PUREE_COPY_AT = "2026-11-20";
 
 export interface PureeCopyRow { account: "relish" | "gingers"; puree_id: string; reference: string | null; title: string; client_name: string | null; contact_name: string | null; day: string; start_time: string | null; pax: number | null; state: string | null; order_url: string | null }
 
@@ -3036,6 +3036,32 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "order_url": "https://puree.app/orders/46757"
  },
  {
+  "account": "relish",
+  "puree_id": "51239",
+  "reference": "252",
+  "title": "Ralph Lauren Ocean Terminal",
+  "client_name": "Ralph Lauren Ocean Terminal",
+  "contact_name": "Kent Lam",
+  "day": "2026-11-21",
+  "start_time": null,
+  "pax": null,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/51239"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51498",
+  "reference": "256",
+  "title": "Ralph Lauren Princes Building",
+  "client_name": "Ralph Lauren Princes Building",
+  "contact_name": "Yin Yin",
+  "day": "2026-11-21",
+  "start_time": null,
+  "pax": null,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/51498"
+ },
+ {
   "account": "gingers",
   "puree_id": "47504",
   "reference": "143.2",
@@ -3076,6 +3102,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "relish",
+  "puree_id": "43189",
+  "reference": "92.1",
+  "title": "Vidushi Mohta",
+  "client_name": "Vidushi Mohta",
+  "contact_name": "Vidushi Mohta",
+  "day": "2026-11-21",
+  "start_time": "17:00",
+  "pax": null,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/43189"
+ },
+ {
+  "account": "relish",
   "puree_id": "46482",
   "reference": "132.1",
   "title": "Ben Brown Fine Art",
@@ -3099,19 +3138,6 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 24,
   "state": "accepted",
   "order_url": "https://puree.app/orders/48015"
- },
- {
-  "account": "relish",
-  "puree_id": "43189",
-  "reference": "92.1",
-  "title": "Vidushi Mohta",
-  "client_name": "Vidushi Mohta",
-  "contact_name": "Vidushi Mohta",
-  "day": "2026-11-21",
-  "start_time": "18:00",
-  "pax": null,
-  "state": "accepted",
-  "order_url": "https://puree.app/orders/43189"
  },
  {
   "account": "gingers",
@@ -3141,6 +3167,32 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "relish",
+  "puree_id": "51508",
+  "reference": "260",
+  "title": "Event",
+  "client_name": "",
+  "contact_name": "",
+  "day": "2026-11-22",
+  "start_time": null,
+  "pax": null,
+  "state": "submitted",
+  "order_url": "https://puree.app/orders/51508"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51544",
+  "reference": "263",
+  "title": "Event",
+  "client_name": "",
+  "contact_name": "",
+  "day": "2026-11-22",
+  "start_time": null,
+  "pax": null,
+  "state": "submitted",
+  "order_url": "https://puree.app/orders/51544"
+ },
+ {
+  "account": "relish",
   "puree_id": "50833",
   "reference": "247.1",
   "title": "Phillips Auction Cocktail Reception ",
@@ -3167,6 +3219,32 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "relish",
+  "puree_id": "51500",
+  "reference": "257",
+  "title": "Event",
+  "client_name": "",
+  "contact_name": "",
+  "day": "2026-11-23",
+  "start_time": null,
+  "pax": null,
+  "state": "draft",
+  "order_url": "https://puree.app/orders/51500"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51501",
+  "reference": "258",
+  "title": "Ralph Lauren Princes Building",
+  "client_name": "Ralph Lauren Princes Building",
+  "contact_name": "Yin Yin",
+  "day": "2026-11-23",
+  "start_time": null,
+  "pax": null,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/51501"
+ },
+ {
+  "account": "relish",
   "puree_id": "49894",
   "reference": "232.1",
   "title": "Leanne",
@@ -3188,7 +3266,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-11-23",
   "start_time": "13:00",
   "pax": 160,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/50208"
  },
  {
@@ -3229,6 +3307,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 25,
   "state": "expired",
   "order_url": "https://puree.app/orders/41233"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51509",
+  "reference": "261",
+  "title": "Ralph Lauren Pacific Place",
+  "client_name": "Ralph Lauren Pacific Place",
+  "contact_name": "Reese Lee",
+  "day": "2026-11-24",
+  "start_time": null,
+  "pax": null,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/51509"
  },
  {
   "account": "relish",
@@ -3318,8 +3409,47 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-11-26",
   "start_time": null,
   "pax": 100,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/46751"
+ },
+ {
+  "account": "gingers",
+  "puree_id": "51238",
+  "reference": "175.1",
+  "title": "Feste-ive DO",
+  "client_name": "Manulife Asia Limited",
+  "contact_name": "Wesley Lai",
+  "day": "2026-11-26",
+  "start_time": null,
+  "pax": 100,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51238"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51246",
+  "reference": "253.1",
+  "title": "Thanksgiving Buffet",
+  "client_name": "Manulife (billing legal entity TBC)",
+  "contact_name": "Wesley Lai",
+  "day": "2026-11-26",
+  "start_time": "12:00",
+  "pax": 100,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51246"
+ },
+ {
+  "account": "gingers",
+  "puree_id": "51220",
+  "reference": "174.1",
+  "title": "Feste-ive DO",
+  "client_name": "Gibson, Dunn & Crutcher LLP",
+  "contact_name": "Diana Spiegel",
+  "day": "2026-11-26",
+  "start_time": "12:30",
+  "pax": 40,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51220"
  },
  {
   "account": "gingers",
@@ -3331,7 +3461,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-11-26",
   "start_time": "18:00",
   "pax": 100,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/46748"
  },
  {
@@ -3346,6 +3476,32 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 320,
   "state": "declined",
   "order_url": "https://puree.app/orders/41236"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51504",
+  "reference": "259",
+  "title": "Event",
+  "client_name": "",
+  "contact_name": "",
+  "day": "2026-11-27",
+  "start_time": null,
+  "pax": null,
+  "state": "draft",
+  "order_url": "https://puree.app/orders/51504"
+ },
+ {
+  "account": "gingers",
+  "puree_id": "51098",
+  "reference": "173.1",
+  "title": "Office light lunch",
+  "client_name": "Coco L",
+  "contact_name": "Coco L",
+  "day": "2026-11-27",
+  "start_time": null,
+  "pax": 50,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51098"
  },
  {
   "account": "relish",
@@ -3507,7 +3663,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "gingers",
   "puree_id": "50695",
   "reference": "166.1",
-  "title": "SCP drop-off",
+  "title": "Office Lunch",
   "client_name": "London Stock Exchange Group",
   "contact_name": "Belinda Leung",
   "day": "2026-11-30",
@@ -3660,6 +3816,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "order_url": "https://puree.app/orders/51002"
  },
  {
+  "account": "relish",
+  "puree_id": "51262",
+  "reference": "254.1",
+  "title": "Tzo Tze | Cocktail Party, Chung Hom Kok",
+  "client_name": "Tzo Tze",
+  "contact_name": "Tzo Tze",
+  "day": "2026-12-01",
+  "start_time": "18:00",
+  "pax": 30,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51262"
+ },
+ {
   "account": "gingers",
   "puree_id": "46981",
   "reference": "141.1",
@@ -3723,6 +3892,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 50,
   "state": "pending",
   "order_url": "https://puree.app/orders/48034"
+ },
+ {
+  "account": "gingers",
+  "puree_id": "51506",
+  "reference": "180.1",
+  "title": "Pre-Christmas Drinks",
+  "client_name": "Ernst & Young Transactions Limited",
+  "contact_name": "Rossana Tin",
+  "day": "2026-12-02",
+  "start_time": "17:15",
+  "pax": 60,
+  "state": "declined",
+  "order_url": "https://puree.app/orders/51506"
  },
  {
   "account": "relish",
@@ -3959,6 +4141,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "order_url": "https://puree.app/orders/50207"
  },
  {
+  "account": "gingers",
+  "puree_id": "51505",
+  "reference": "179.1",
+  "title": "Sharing platters",
+  "client_name": "Saida Baroudi",
+  "contact_name": "Saida Baroudi",
+  "day": "2026-12-04",
+  "start_time": null,
+  "pax": 14,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51505"
+ },
+ {
   "account": "relish",
   "puree_id": "46749",
   "reference": "148.1",
@@ -4113,6 +4308,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 40,
   "state": "accepted",
   "order_url": "https://puree.app/orders/46503"
+ },
+ {
+  "account": "gingers",
+  "puree_id": "51512",
+  "reference": "181.1",
+  "title": "Sharing platters",
+  "client_name": "Saida Baroudi",
+  "contact_name": "Saida Baroudi",
+  "day": "2026-12-04",
+  "start_time": "20:00",
+  "pax": 14,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51512"
  },
  {
   "account": "gingers",
@@ -4324,6 +4532,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "gingers",
+  "puree_id": "51248",
+  "reference": "176.1",
+  "title": "Securities & Futures Commission",
+  "client_name": "Securities & Futures Commission",
+  "contact_name": "Nico'la Chan",
+  "day": "2026-12-09",
+  "start_time": "12:30",
+  "pax": 12,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51248"
+ },
+ {
+  "account": "gingers",
   "puree_id": "41959",
   "reference": "73.1",
   "title": "Xmas dinner",
@@ -4360,6 +4581,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 90,
   "state": "accepted",
   "order_url": "https://puree.app/orders/48252"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51519",
+  "reference": "262.1",
+  "title": "APF Christmas Party — event time TBC",
+  "client_name": "APF",
+  "contact_name": "Helen",
+  "day": "2026-12-10",
+  "start_time": "12:00",
+  "pax": 80,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51519"
  },
  {
   "account": "gingers",
@@ -4584,6 +4818,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "gingers",
+  "puree_id": "51251",
+  "reference": "177.1",
+  "title": "SCP",
+  "client_name": "AZURE Marketing (H.K.) Ltd.",
+  "contact_name": "Christy Chan",
+  "day": "2026-12-14",
+  "start_time": "15:00",
+  "pax": 50,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51251"
+ },
+ {
+  "account": "gingers",
   "puree_id": "46755",
   "reference": "137.1",
   "title": "Xmas lunch drop-off",
@@ -4623,16 +4870,16 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "gingers",
-  "puree_id": "46501",
-  "reference": "130.1",
-  "title": "LHSBuffet for lunch",
-  "client_name": "TJX",
-  "contact_name": "Vinci",
-  "day": "2026-12-17",
-  "start_time": null,
-  "pax": 80,
+  "puree_id": "51273",
+  "reference": "178.1",
+  "title": "LKK Health Products Group Ltd",
+  "client_name": "LKK Health Products Group Ltd",
+  "contact_name": "Tracy Lee",
+  "day": "2026-12-16",
+  "start_time": "13:00",
+  "pax": 25,
   "state": "pending",
-  "order_url": "https://puree.app/orders/46501"
+  "order_url": "https://puree.app/orders/51273"
  },
  {
   "account": "gingers",
@@ -4644,7 +4891,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-17",
   "start_time": "13:00",
   "pax": 80,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/46472"
  },
  {
@@ -4728,14 +4975,14 @@ export const PUREE_COPY: PureeCopyRow[] = [
  {
   "account": "relish",
   "puree_id": "47989",
-  "reference": "173.1",
-  "title": "Stephanie Ng",
+  "reference": "173.2",
+  "title": "Private party at Belchers Clubhouse",
   "client_name": "Stephanie Ng",
   "contact_name": "Stephanie Ng",
   "day": "2026-12-19",
   "start_time": "18:30",
   "pax": 38,
-  "state": "accepted",
+  "state": "pending",
   "order_url": "https://puree.app/orders/47989"
  },
  {
@@ -4763,6 +5010,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": null,
   "state": "draft",
   "order_url": "https://puree.app/orders/50673"
+ },
+ {
+  "account": "relish",
+  "puree_id": "51292",
+  "reference": "255",
+  "title": "Romain Serran",
+  "client_name": "Romain Serran",
+  "contact_name": "Romain Serran",
+  "day": "2026-12-23",
+  "start_time": null,
+  "pax": null,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/51292"
  },
  {
   "account": "gingers",
@@ -4869,6 +5129,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "order_url": "https://puree.app/orders/41674"
  },
  {
+  "account": "gingers",
+  "puree_id": "51515",
+  "reference": "182.1",
+  "title": "SCP",
+  "client_name": "Resolution Chambers",
+  "contact_name": "Louie Lo",
+  "day": "2027-01-06",
+  "start_time": "18:00",
+  "pax": 40,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/51515"
+ },
+ {
   "account": "relish",
   "puree_id": "49112",
   "reference": "207.1",
@@ -4911,7 +5184,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "gingers",
   "puree_id": "50712",
   "reference": "168.1",
-  "title": "AM break/Simple Buffet/PM break",
+  "title": "AM break/Canapés + Additional Menu/PM break",
   "client_name": "Groupe SEB",
   "contact_name": "Dominique Wu",
   "day": "2027-01-14",
@@ -4919,19 +5192,6 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 50,
   "state": "pending",
   "order_url": "https://puree.app/orders/50712"
- },
- {
-  "account": "gingers",
-  "puree_id": "51003",
-  "reference": "171.1",
-  "title": "AM break/LHSBuffet/PM break, lunch $350pp",
-  "client_name": "Groupe SEB",
-  "contact_name": "Dominique Wu",
-  "day": "2027-01-14",
-  "start_time": "10:00",
-  "pax": 50,
-  "state": "pending",
-  "order_url": "https://puree.app/orders/51003"
  },
  {
   "account": "gingers",
@@ -5006,7 +5266,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "client_name": "Naughty Production",
   "contact_name": "Simone Yip",
   "day": "2027-02-03",
-  "start_time": "21:00",
+  "start_time": "18:00",
   "pax": 300,
   "state": "pending",
   "order_url": "https://puree.app/orders/44069"
@@ -5019,7 +5279,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "client_name": "Naughty Production",
   "contact_name": "Simone Yip",
   "day": "2027-02-03",
-  "start_time": "21:00",
+  "start_time": "18:00",
   "pax": 300,
   "state": "pending",
   "order_url": "https://puree.app/orders/50687"
