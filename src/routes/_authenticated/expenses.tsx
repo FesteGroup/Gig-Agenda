@@ -44,6 +44,8 @@ const expenses = () => (supabase as any).from("expenses");
 const CATEGORIES = ["Taxi", "Transport", "Meal", "Parking", "Supplies", "Other"];
 const catLabel = (c: string) => (c === "Transport" ? "Other transportations" : c);
 const STATUS_LABEL: Record<Status, string> = { submitted: "Waiting", approved: "Approved", rejected: "Rejected", paid: "Paid" };
+// Top bar of each expense card: yellow while waiting, red if rejected, green once approved or paid.
+const STATUS_BAR: Record<Status, string> = { submitted: "var(--warning)", rejected: "var(--destructive)", approved: "var(--success)", paid: "var(--success)" };
 const STATUS_CLS: Record<Status, string> = { submitted: "", approved: "border-success text-success", rejected: "border-destructive text-destructive", paid: "bg-success text-success-foreground border-success" };
 const isMissing = (e: { code?: string; message?: string } | null) => !!e && (e.code === "42P01" || e.code === "PGRST205" || /expenses/.test(e.message ?? "") && /not find|does not exist/.test(e.message ?? ""));
 
@@ -181,7 +183,7 @@ function MyExpenses({ userId, name }: { userId: string; name: string }) {
             </div>
             {list.length === 0 && <p className="text-sm text-muted-foreground">Nothing sent yet.</p>}
             {list.map((x) => (
-              <div key={x.id} className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 text-sm">
+              <div key={x.id} className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 text-sm" style={{ borderTopColor: STATUS_BAR[x.status] }}>
                 <div className="mr-auto min-w-0">
                   <div className="font-medium">{catLabel(x.category)} · {hkd(Number(x.amount))}</div>
                   <div className="truncate text-muted-foreground">{x.events ? `${fmtDay(x.events.day)} · ${x.events.title}` : fmtDay(x.day)}{x.note ? ` · ${x.note}` : ""}</div>
@@ -274,7 +276,7 @@ function OfficeExpenses() {
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="w-full text-sm">
-          <thead className="bg-secondary text-left text-xs"><tr><th className="p-2">Worker</th><th className="p-2">Date / event</th><th className="p-2">Type</th><th className="p-2 text-right">Amount</th><th className="p-2">Details</th><th className="p-2">Receipt</th><th className="p-2">Status</th><th className="p-2" /></tr></thead>
+          <thead className="bg-secondary text-left text-xs"><tr><th className="p-2">From</th><th className="p-2">Date / event</th><th className="p-2">Type</th><th className="p-2 text-right">Amount</th><th className="p-2">Details</th><th className="p-2">Receipt</th><th className="p-2">Status</th><th className="p-2" /></tr></thead>
           <tbody>
             {list.length === 0 && <tr><td colSpan={8} className="p-3 text-muted-foreground">No expenses here.</td></tr>}
             {list.map((x) => (
