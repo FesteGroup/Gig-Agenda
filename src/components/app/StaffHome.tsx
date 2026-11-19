@@ -57,7 +57,7 @@ export function StaffHome({ me }: { me: Me }) {
       {pending.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-xl font-bold">Invitations <span className="text-accent-foreground">({pending.length})</span></h2>
-          {pending.map((i) => <InvitationCard key={i.id} inv={i} />)}
+          {pending.map((i) => <InvitationCard key={i.id} inv={i} all={data} />)}
         </section>
       )}
 

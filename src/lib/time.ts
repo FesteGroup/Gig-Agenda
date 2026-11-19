@@ -2,7 +2,12 @@
 export const TZ = "Asia/Hong_Kong";
 
 export function hkToday(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
 export function toDay(d: Date): string {
@@ -52,7 +57,10 @@ export function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: str
   return a1 < b2 && b1 < a2;
 }
 
-export function fmtDay(s: string, opts: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" }) {
+export function fmtDay(
+  s: string,
+  opts: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" },
+) {
   return parseDay(s).toLocaleDateString("en-GB", opts);
 }
 
@@ -65,4 +73,32 @@ export function hkd(n: number | null | undefined): string {
 export function hkdExact(n: number | null | undefined): string {
   if (n == null || Number.isNaN(n)) return "—";
   return "HK$" + n.toLocaleString("en-HK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/** A shift as absolute minutes (days since 1970 × 1440 + time); an end at or before the start runs past midnight. */
+export function shiftSpan(day: string, start: string, end: string): [number, number] {
+  const [y, m, d] = day.slice(0, 10).split("-").map(Number);
+  const base = Math.round(Date.UTC(y!, (m ?? 1) - 1, d ?? 1) / 86400000) * 1440;
+  const s = base + minutesOf(start);
+  let e = base + minutesOf(end);
+  if (e <= s) e += 1440;
+  return [s, e];
+}
+
+/** Two shifts overlap in time, also across midnight (an overnight shift and an early one the next day). */
+export function shiftsClash(
+  a: { day: string; start: string; end: string },
+  b: { day: string; start: string; end: string },
+): boolean {
+  const [a1, a2] = shiftSpan(a.day, a.start, a.end);
+  const [b1, b2] = shiftSpan(b.day, b.start, b.end);
+  return a1 < b2 && b1 < a2;
+}
+
+/** The day before and after a yyyy-mm-dd day, for overnight checks. */
+export function neighbourDays(day: string): [string, string] {
+  const [y, m, d] = day.slice(0, 10).split("-").map(Number);
+  const t = Date.UTC(y!, (m ?? 1) - 1, d ?? 1);
+  const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  return [iso(t - 86400000), iso(t + 86400000)];
 }

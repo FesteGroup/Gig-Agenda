@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { clientChargeForShift, staffCost } from "./costs";
-import { shiftHours } from "./time";
+import { shiftHours, shiftsClash } from "./time";
 
 const OT = [
   { start_hour: 0, end_hour: 1, client_rate: 290 },
@@ -21,7 +21,9 @@ describe("costs", () => {
     expect(clientChargeForShift("20:00", "01:00", 0, 190, OT, true)).toBe(4 * 190 + 290);
   });
   it("shift to 03:30 uses every bracket", () => {
-    expect(clientChargeForShift("22:00", "03:30", 0, 190, OT, true)).toBe(2 * 190 + 290 + 395 + 625 + 0.5 * 1200);
+    expect(clientChargeForShift("22:00", "03:30", 0, 190, OT, true)).toBe(
+      2 * 190 + 290 + 395 + 625 + 0.5 * 1200,
+    );
   });
   it("overtime off bills everything at normal rate", () => {
     expect(clientChargeForShift("20:00", "01:00", 0, 190, OT, false)).toBe(5 * 190);
@@ -30,5 +32,36 @@ describe("costs", () => {
     expect(staffCost(5, 120, 100)).toBe(600);
     expect(staffCost(5, null, 100)).toBe(500);
     expect(staffCost(5, null, null)).toBeNull();
+  });
+});
+
+describe("shift clashes", () => {
+  it("same day overlap and back-to-back", () => {
+    expect(
+      shiftsClash(
+        { day: "2026-12-09", start: "10:00", end: "14:00" },
+        { day: "2026-12-09", start: "13:00", end: "18:00" },
+      ),
+    ).toBe(true);
+    expect(
+      shiftsClash(
+        { day: "2026-12-09", start: "10:00", end: "14:00" },
+        { day: "2026-12-09", start: "14:00", end: "18:00" },
+      ),
+    ).toBe(false);
+  });
+  it("overnight shift clashes with an early shift the next day", () => {
+    expect(
+      shiftsClash(
+        { day: "2026-12-09", start: "20:00", end: "02:00" },
+        { day: "2026-12-10", start: "01:00", end: "05:00" },
+      ),
+    ).toBe(true);
+    expect(
+      shiftsClash(
+        { day: "2026-12-09", start: "20:00", end: "02:00" },
+        { day: "2026-12-10", start: "08:00", end: "12:00" },
+      ),
+    ).toBe(false);
   });
 });

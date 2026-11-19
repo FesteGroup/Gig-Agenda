@@ -17,11 +17,11 @@ function Page() {
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-3xl font-bold">Invitations</h1>
       {open.length === 0 && <p className="text-muted-foreground">No open invitations.</p>}
-      <div className="space-y-3">{open.map((i) => <InvitationCard key={i.id} inv={i} />)}</div>
+      <div className="space-y-3">{open.map((i) => <InvitationCard key={i.id} inv={i} all={data} />)}</div>
       {past.length > 0 && (
         <>
           <h2 className="pt-4 text-xl font-bold">Earlier</h2>
-          <div className="space-y-3">{past.slice(0, 30).map((i) => <InvitationCard key={i.id} inv={i} />)}</div>
+          <div className="space-y-3">{past.slice(0, 30).map((i) => <InvitationCard key={i.id} inv={i} all={data} />)}</div>
         </>
       )}
     </div>
