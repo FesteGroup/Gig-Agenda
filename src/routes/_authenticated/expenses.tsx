@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Camera, Check, Download, FileText, Receipt, X, Banknote } from "lucide-react";
+import { Camera, Check, Download, FileText, Receipt, X, Banknote, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
 import { useMyInvitations } from "@/lib/my-gigs";
@@ -226,9 +226,11 @@ function OfficeExpenses() {
       if (r === null) return;
       office_note = r.trim() || null;
     }
-    const { error } = await expenses().update({ status: s, office_note, reviewed_at: new Date().toISOString() }).eq("id", x.id);
+    const undo = s === "submitted";
+    if (undo && !confirm(`Undo "${STATUS_LABEL[x.status]}" and put this expense back to Waiting?`)) return;
+    const { error } = await expenses().update({ status: s, office_note: undo ? null : office_note, reviewed_at: undo ? null : new Date().toISOString() }).eq("id", x.id);
     if (error) return toast.error(error.message);
-    await supabase.from("notifications").insert({ user_id: x.user_id, title: `Expense ${STATUS_LABEL[s].toLowerCase()}: ${catLabel(x.category)} ${hkd(Number(x.amount))}`, body: office_note, link: "/expenses" });
+    await supabase.from("notifications").insert({ user_id: x.user_id, title: `Expense ${undo ? "back to waiting" : STATUS_LABEL[s].toLowerCase()}: ${catLabel(x.category)} ${hkd(Number(x.amount))}`, body: undo ? null : office_note, link: "/expenses" });
     qc.invalidateQueries({ queryKey: ["expenses"] });
   }
 
@@ -291,6 +293,7 @@ function OfficeExpenses() {
                     {x.status === "submitted" && <Button size="sm" variant="outline" onClick={() => update(x, "approved")}><Check className="h-4 w-4" />Approve</Button>}
                     {(x.status === "submitted" || x.status === "approved") && <Button size="sm" onClick={() => update(x, "paid")}><Banknote className="h-4 w-4" />Paid</Button>}
                     {x.status === "submitted" && <Button size="icon" variant="ghost" onClick={() => update(x, "rejected")} aria-label="Reject"><X className="h-4 w-4" /></Button>}
+                    {x.status !== "submitted" && <Button size="sm" variant="ghost" onClick={() => update(x, "submitted")} title="Back to Waiting"><Undo2 className="h-4 w-4" />Undo</Button>}
                   </div>
                 </td>
               </tr>
