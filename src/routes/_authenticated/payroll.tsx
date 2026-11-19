@@ -61,8 +61,7 @@ function Page() {
   const total = lines.reduce((s, l) => s + (l.amount ?? 0), 0);
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-2">
-      <div className="min-w-0 space-y-8">
+    <div className="space-y-8">
       <section className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="mr-auto text-3xl font-bold">Payroll</h1>
@@ -82,8 +81,7 @@ function Page() {
           </table>
         </div>
       </section>
-      </div>
-      <div className="min-w-0"><Forecast today={today} /></div>
+      <Forecast today={today} />
     </div>
   );
 }
@@ -125,7 +123,7 @@ function Forecast({ today }: { today: string }) {
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-auto text-3xl font-bold">Forecast staff cost</h1>
+        <h2 className="mr-auto text-2xl font-bold">Forecast staff cost</h2>
         <ToggleGroup type="single" value={span} onValueChange={(v) => v && setSpan(v as typeof span)} variant="outline" size="sm">
           <ToggleGroupItem value="7">Week</ToggleGroupItem>
           <ToggleGroupItem value="14">2 weeks</ToggleGroupItem>
