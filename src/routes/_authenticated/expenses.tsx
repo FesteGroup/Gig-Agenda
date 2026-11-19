@@ -291,7 +291,7 @@ function OfficeExpenses() {
                   <div className={cn("flex justify-end gap-1")}>
                     {x.status === "submitted" && <Button size="sm" variant="outline" onClick={() => update(x, "approved")}><Check className="h-4 w-4" />Approve</Button>}
                     {(x.status === "submitted" || x.status === "approved") && <Button size="sm" onClick={() => update(x, "paid")}><Banknote className="h-4 w-4" />Paid</Button>}
-                    {x.status === "submitted" && <Button size="icon" variant="ghost" onClick={() => update(x, "rejected")} aria-label="Reject"><X className="h-4 w-4" /></Button>}
+                    {x.status === "submitted" && <Button size="sm" variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => update(x, "rejected")}>Reject</Button>}
                     {x.status !== "submitted" && <Button size="sm" variant="ghost" onClick={() => update(x, "submitted")} title="Back to Waiting"><Undo2 className="h-4 w-4" />Undo</Button>}
                   </div>
                 </td>
