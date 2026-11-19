@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useMyInvitations, type MyInvitation } from "@/lib/my-gigs";
+import { clashingGig, useMyInvitations, type MyInvitation } from "@/lib/my-gigs";
 import { addDays, fmtDay, hhmm, hkToday, hkd, hkdExact, shiftHours } from "@/lib/time";
 import { isPublicHoliday, shiftPay } from "@/lib/pay";
 import { cn } from "@/lib/utils";
@@ -13,21 +13,61 @@ import type { Me } from "@/lib/me";
 export function StaffHome({ me }: { me: Me }) {
   const { data = [] } = useMyInvitations(me.id);
   const today = hkToday();
-  const pending = data.filter((i) => i.status === "invited" && (!i.deadline || new Date(i.deadline) > new Date()));
+  const pending = data.filter(
+    (i) =>
+      i.status === "invited" &&
+      (!i.deadline || new Date(i.deadline) > new Date()) &&
+      !clashingGig(i, data),
+  );
   const gigs = data
     .filter((i) => (i.status === "confirmed" || i.status === "accepted") && i.events!.day >= today)
     .sort((a, b) => a.events!.day.localeCompare(b.events!.day));
   const month = today.slice(0, 7);
   const monthGigs = data.filter((i) => i.status === "confirmed" && i.events!.day.startsWith(month));
-  const hours = monthGigs.reduce((s, i) => s + shiftHours(i.staffing_rows!.start_time, i.staffing_rows!.end_time, i.staffing_rows!.break_minutes), 0);
-  const earnings = monthGigs.reduce((s, i) => s + (i.rate ?? 0) * shiftHours(i.staffing_rows!.start_time, i.staffing_rows!.end_time, i.staffing_rows!.break_minutes), 0);
+  const hours = monthGigs.reduce(
+    (s, i) =>
+      s +
+      shiftHours(
+        i.staffing_rows!.start_time,
+        i.staffing_rows!.end_time,
+        i.staffing_rows!.break_minutes,
+      ),
+    0,
+  );
+  const earnings = monthGigs.reduce(
+    (s, i) =>
+      s +
+      (i.rate ?? 0) *
+        shiftHours(
+          i.staffing_rows!.start_time,
+          i.staffing_rows!.end_time,
+          i.staffing_rows!.break_minutes,
+        ),
+    0,
+  );
   // Forecast earnings: same rule as the office forecast (accepted and confirmed gigs from today, on each shift's hours and pay rules).
   const [span, setSpan] = useState<7 | 14 | 30>(7);
   const until = addDays(today, span - 1);
-  const ahead = data.filter((i) => (i.status === "accepted" || i.status === "confirmed") && i.staffing_rows && i.events!.day >= today && i.events!.day <= until);
+  const ahead = data.filter(
+    (i) =>
+      (i.status === "accepted" || i.status === "confirmed") &&
+      i.staffing_rows &&
+      i.events!.day >= today &&
+      i.events!.day <= until,
+  );
   const forecast = ahead.reduce((s, i) => {
     const r = i.staffing_rows!;
-    return s + (shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.rate, publicHoliday: isPublicHoliday(null, i.events!.day) }) ?? 0);
+    return (
+      s +
+      (shiftPay({
+        position: r.positions?.name,
+        start: r.start_time,
+        end: r.end_time,
+        breakMinutes: r.break_minutes,
+        personalRate: i.rate,
+        publicHoliday: isPublicHoliday(null, i.events!.day),
+      }) ?? 0)
+    );
   }, 0);
 
   return (
@@ -44,27 +84,61 @@ export function StaffHome({ me }: { me: Me }) {
         <div className="rounded-xl border bg-card p-3">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span className="mr-auto">Forecast</span>
-            {([[7, "W"], [14, "2W"], [30, "M"]] as const).map(([v, l]) => (
-              <button key={v} type="button" onClick={() => setSpan(v)} aria-pressed={span === v} title={v === 7 ? "Next week" : v === 14 ? "Next 2 weeks" : "Next month"}
-                className={cn("rounded px-1 text-[10px] font-semibold", span === v ? "bg-primary text-primary-foreground" : "hover:bg-secondary")}>{l}</button>
+            {(
+              [
+                [7, "W"],
+                [14, "2W"],
+                [30, "M"],
+              ] as const
+            ).map(([v, l]) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setSpan(v)}
+                aria-pressed={span === v}
+                title={v === 7 ? "Next week" : v === 14 ? "Next 2 weeks" : "Next month"}
+                className={cn(
+                  "rounded px-1 text-[10px] font-semibold",
+                  span === v ? "bg-primary text-primary-foreground" : "hover:bg-secondary",
+                )}
+              >
+                {l}
+              </button>
             ))}
           </div>
           <div className="font-display text-xl font-bold">{hkdExact(forecast)}</div>
-          <div className="text-[10px] text-muted-foreground">{ahead.length} gig{ahead.length === 1 ? "" : "s"} until {fmtDay(until, { day: "numeric", month: "short" })}</div>
+          <div className="text-[10px] text-muted-foreground">
+            {ahead.length} gig{ahead.length === 1 ? "" : "s"} until{" "}
+            {fmtDay(until, { day: "numeric", month: "short" })}
+          </div>
         </div>
       </div>
 
       {pending.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold">Invitations <span className="text-accent-foreground">({pending.length})</span></h2>
-          {pending.map((i) => <InvitationCard key={i.id} inv={i} all={data} />)}
+          <h2 className="text-xl font-bold">
+            Invitations <span className="text-accent-foreground">({pending.length})</span>
+          </h2>
+          {pending.map((i) => (
+            <InvitationCard key={i.id} inv={i} all={data} />
+          ))}
         </section>
       )}
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold">Upcoming</h2>
-        {gigs.length === 0 && <p className="text-sm text-muted-foreground">No upcoming gigs yet. Keep your <Link to="/availability" className="text-primary underline">availability</Link> up to date.</p>}
-        {gigs.map((i) => <GigCard key={i.id} inv={i} />)}
+        {gigs.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No upcoming gigs yet. Keep your{" "}
+            <Link to="/availability" className="text-primary underline">
+              availability
+            </Link>{" "}
+            up to date.
+          </p>
+        )}
+        {gigs.map((i) => (
+          <GigCard key={i.id} inv={i} />
+        ))}
       </section>
     </div>
   );
@@ -91,14 +165,27 @@ function GigCard({ inv }: { inv: MyInvitation }) {
     <div className="rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-sm font-semibold text-primary">{fmtDay(e.day, { weekday: "long", day: "numeric", month: "short" })}</div>
+          <div className="text-sm font-semibold text-primary">
+            {fmtDay(e.day, { weekday: "long", day: "numeric", month: "short" })}
+          </div>
           <div className="font-display text-lg font-bold">{e.title}</div>
-          <div className="text-sm text-muted-foreground">{r.positions?.name} · {hhmm(r.start_time)}–{hhmm(r.end_time)}</div>
+          <div className="text-sm text-muted-foreground">
+            {r.positions?.name} · {hhmm(r.start_time)}–{hhmm(r.end_time)}
+          </div>
         </div>
-        {inv.status === "accepted" && <span className="rounded-full bg-warning/30 px-2 py-0.5 text-xs">Awaiting confirmation</span>}
+        {inv.status === "accepted" && (
+          <span className="rounded-full bg-warning/30 px-2 py-0.5 text-xs">
+            Awaiting confirmation
+          </span>
+        )}
       </div>
       {e.venue && (
-        <a className="mt-2 flex items-center gap-1.5 text-sm text-primary" target="_blank" rel="noreferrer" href={`https://maps.google.com/?q=${encodeURIComponent(e.venue)}`}>
+        <a
+          className="mt-2 flex items-center gap-1.5 text-sm text-primary"
+          target="_blank"
+          rel="noreferrer"
+          href={`https://maps.google.com/?q=${encodeURIComponent(e.venue)}`}
+        >
           <MapPin className="h-4 w-4" /> {e.venue}
         </a>
       )}
@@ -107,7 +194,12 @@ function GigCard({ inv }: { inv: MyInvitation }) {
           <div className="mb-1 text-xs font-semibold text-muted-foreground">Team</div>
           <div className="flex flex-wrap gap-1.5">
             {team.map((t) => (
-              <span key={t.user_id + t.position_name} className="rounded-full bg-secondary px-2 py-0.5 text-xs">{t.full_name} · {t.position_name}</span>
+              <span
+                key={t.user_id + t.position_name}
+                className="rounded-full bg-secondary px-2 py-0.5 text-xs"
+              >
+                {t.full_name} · {t.position_name}
+              </span>
             ))}
           </div>
         </div>

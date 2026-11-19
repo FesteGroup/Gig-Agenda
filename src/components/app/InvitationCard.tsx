@@ -122,23 +122,23 @@ export function InvitationCard({ inv, all = [] }: { inv: MyInvitation; all?: MyI
               </Button>
             </div>
           </div>
+        ) : clash ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+              Occupied
+            </span>
+            <span className="text-xs text-muted-foreground">
+              You're booked at this time: {clash.events?.title}{" "}
+              {hhmm(clash.staffing_rows!.start_time)}–{hhmm(clash.staffing_rows!.end_time)}
+              {clash.events!.day !== e.day ? ` (${fmtDay(clash.events!.day)})` : ""}
+            </span>
+          </div>
         ) : (
-          <div className="mt-4 space-y-2">
-            {clash && (
-              <p className="rounded-md bg-warning/20 px-2 py-1.5 text-xs">
-                You're already booked at this time: <b>{clash.events?.title}</b>{" "}
-                {hhmm(clash.staffing_rows!.start_time)}–{hhmm(clash.staffing_rows!.end_time)}
-                {clash.events!.day !== e.day ? ` (${fmtDay(clash.events!.day)})` : ""}.
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" onClick={() => setDeclining(true)}>
-                Decline
-              </Button>
-              <Button onClick={() => respond(true)} disabled={!!clash}>
-                {clash ? "Unavailable" : "Accept"}
-              </Button>
-            </div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => setDeclining(true)}>
+              Decline
+            </Button>
+            <Button onClick={() => respond(true)}>Accept</Button>
           </div>
         ))}
       {(inv.status === "accepted" || inv.status === "confirmed") && (

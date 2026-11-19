@@ -4,7 +4,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ExternalLink, MapPin, Trash2, MessageCircle, Megaphone, Check, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  MapPin,
+  Trash2,
+  MessageCircle,
+  Megaphone,
+  Check,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe, usePositions } from "@/lib/me";
 import { getOrderDetails } from "@/lib/puree.functions";
@@ -16,13 +25,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CallStaffDialog } from "@/components/app/CallStaffDialog";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/app/Avatar";
 
 export const Route = createFileRoute("/_authenticated/events/$id")({
-  head: () => ({ meta: [{ title: "Event — Gig Agenda" }, { name: "description", content: "Event staffing and team." }, { property: "og:title", content: "Event — Gig Agenda" }, { property: "og:description", content: "Event staffing and team." }] }),
+  head: () => ({
+    meta: [
+      { title: "Event — Gig Agenda" },
+      { name: "description", content: "Event staffing and team." },
+      { property: "og:title", content: "Event — Gig Agenda" },
+      { property: "og:description", content: "Event staffing and team." },
+    ],
+  }),
   component: EventPage,
 });
 
@@ -66,10 +88,22 @@ function EventPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <Link to="/home" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back</Link>
+      <Link
+        to="/home"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back
+      </Link>
       <header className="space-y-1">
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className={cn("rounded px-1.5 py-0.5 font-bold", ev.account === "gingers" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground")}>
+          <span
+            className={cn(
+              "rounded px-1.5 py-0.5 font-bold",
+              ev.account === "gingers"
+                ? "bg-accent text-accent-foreground"
+                : "bg-primary text-primary-foreground",
+            )}
+          >
             {ev.source === "manual" ? "Manual" : ev.account === "gingers" ? "Gingers" : "Relish"}
           </span>
           {ev.reference && <span className="text-muted-foreground">#{ev.reference}</span>}
@@ -78,78 +112,153 @@ function EventPage() {
         <h1 className="text-3xl font-bold">{ev.title}</h1>
         <p className="text-muted-foreground">
           {fmtDay(ev.day, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-          {ev.start_time && ` · ${hhmm(ev.start_time)}`}{ev.end_time && `–${hhmm(ev.end_time)}`}
+          {ev.start_time && ` · ${hhmm(ev.start_time)}`}
+          {ev.end_time && `–${hhmm(ev.end_time)}`}
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-          {ev.client_name && <span>Client: <b>{ev.client_name}</b></span>}
+          {ev.client_name && (
+            <span>
+              Client: <b>{ev.client_name}</b>
+            </span>
+          )}
           {ev.pax && <span>{ev.pax} guests</span>}
           {(puree?.venue || ev.venue) && (
-            <a className="inline-flex items-center gap-1 text-primary" target="_blank" rel="noreferrer" href={`https://maps.google.com/?q=${encodeURIComponent(puree?.venue || ev.venue || "")}`}>
+            <a
+              className="inline-flex items-center gap-1 text-primary"
+              target="_blank"
+              rel="noreferrer"
+              href={`https://maps.google.com/?q=${encodeURIComponent(puree?.venue || ev.venue || "")}`}
+            >
               <MapPin className="h-4 w-4" /> {puree?.venue || ev.venue}
             </a>
           )}
           {me.isOffice && ev.order_url && (
-            <a className="inline-flex items-center gap-1 text-primary" href={ev.order_url} target="_blank" rel="noreferrer">Open in Puree <ExternalLink className="h-3.5 w-3.5" /></a>
+            <a
+              className="inline-flex items-center gap-1 text-primary"
+              href={ev.order_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open in Puree <ExternalLink className="h-3.5 w-3.5" />
+            </a>
           )}
         </div>
-        {me.isOffice && puree?.deliveries?.length ? <p className="text-sm text-muted-foreground">Delivery: {puree.deliveries.join(", ")}</p> : null}
+        {me.isOffice && puree?.deliveries?.length ? (
+          <p className="text-sm text-muted-foreground">Delivery: {puree.deliveries.join(", ")}</p>
+        ) : null}
       </header>
 
       {me.isOffice && puree?.items?.length ? (
         <details className="rounded-xl border bg-card p-4">
-          <summary className="cursor-pointer font-semibold">Menu ({puree.items.length} items)</summary>
-          <ul className="mt-2 space-y-0.5 text-sm">{puree.items.map((i, k) => <li key={k}>{i.quantity ? `${i.quantity} × ` : ""}{i.name}</li>)}</ul>
+          <summary className="cursor-pointer font-semibold">
+            Menu ({puree.items.length} items)
+          </summary>
+          <ul className="mt-2 space-y-0.5 text-sm">
+            {puree.items.map((i, k) => (
+              <li key={k}>
+                {i.quantity ? `${i.quantity} × ` : ""}
+                {i.name}
+              </li>
+            ))}
+          </ul>
         </details>
       ) : null}
 
-      {!me.isOffice && <section className="space-y-2">
-        <h2 className="text-xl font-bold">Team</h2>
-        {team.length === 0 ? <p className="text-sm text-muted-foreground">No one confirmed yet.</p> : (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {team.map((t) => (
-              <div key={t.user_id + t.position_name} className="flex items-center gap-3 rounded-lg border bg-card p-2">
-                <Avatar name={t.full_name} url={t.photo_url} />
-                <div className="text-sm"><div className="font-semibold">{t.full_name}</div><div className="text-muted-foreground">{t.position_name} · {hhmm(t.start_time)}–{hhmm(t.end_time)}</div></div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>}
+      {!me.isOffice && (
+        <section className="space-y-2">
+          <h2 className="text-xl font-bold">Team</h2>
+          {team.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No one confirmed yet.</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {team.map((t) => (
+                <div
+                  key={t.user_id + t.position_name}
+                  className="flex items-center gap-3 rounded-lg border bg-card p-2"
+                >
+                  <Avatar name={t.full_name} url={t.photo_url} />
+                  <div className="text-sm">
+                    <div className="font-semibold">{t.full_name}</div>
+                    <div className="text-muted-foreground">
+                      {t.position_name} · {hhmm(t.start_time)}–{hhmm(t.end_time)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
-      {me.isOffice && <OfficeStaffing eventId={id} ev={ev} onChange={() => { qc.invalidateQueries({ queryKey: ["team", id] }); qc.invalidateQueries({ queryKey: ["events"] }); }} />}
+      {me.isOffice && (
+        <OfficeStaffing
+          eventId={id}
+          ev={ev}
+          onChange={() => {
+            qc.invalidateQueries({ queryKey: ["team", id] });
+            qc.invalidateQueries({ queryKey: ["events"] });
+          }}
+        />
+      )}
     </div>
   );
 }
 
-type EventRow = { id: string; title: string; day: string; venue: string | null; start_time: string | null; notes?: string | null; account?: string | null };
+type EventRow = {
+  id: string;
+  title: string;
+  day: string;
+  venue: string | null;
+  start_time: string | null;
+  notes?: string | null;
+  account?: string | null;
+};
 
-function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventRow; onChange: () => void }) {
+function OfficeStaffing({
+  eventId,
+  ev,
+  onChange,
+}: {
+  eventId: string;
+  ev: EventRow;
+  onChange: () => void;
+}) {
   const qc = useQueryClient();
   const { data: positions = [] } = usePositions();
   const [callRow, setCallRow] = useState<string | null>(null);
   const [applyOt, setApplyOt] = useState(false);
-  const [form, setForm] = useState({ position_id: "", quantity: "1", start_time: hhmm(ev.start_time) || "17:30", end_time: "22:30", break_minutes: "0" });
+  const [form, setForm] = useState({
+    position_id: "",
+    quantity: "1",
+    start_time: hhmm(ev.start_time) || "17:30",
+    end_time: "22:30",
+    break_minutes: "0",
+  });
 
   const { data: rows = [] } = useQuery({
     queryKey: ["rows", eventId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("staffing_rows")
-        .select("*, positions(name,color), invitations(*, profiles(id,full_name,phone,photo_url,personal_hourly_cost))")
+        .select(
+          "*, positions(name,color), invitations(*, profiles(id,full_name,phone,photo_url,personal_hourly_cost))",
+        )
         .eq("event_id", eventId)
         .order("created_at");
       if (error) throw error;
       return data;
     },
   });
-  // Invited people who meanwhile took another gig at the same time: shown as "booked elsewhere", not declined.
+  // Invited people who meanwhile took another gig at the same time: shown as "occupied", not declined.
   const { data: busyElsewhere = [] } = useQuery({
     queryKey: ["busy-elsewhere", eventId, ev.day],
     queryFn: async () =>
       (
         await supabase
           .from("invitations")
-          .select("user_id,staffing_row_id,staffing_rows!inner(start_time,end_time),events!inner(day,title)")
+          .select(
+            "user_id,staffing_row_id,staffing_rows!inner(start_time,end_time),events!inner(day,title)",
+          )
           .in("events.day", [ev.day, ...neighbourDays(ev.day)])
           .in("status", ["accepted", "confirmed"])
       ).data ?? [],
@@ -159,19 +268,39 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
       (b) =>
         b.user_id === userId &&
         b.staffing_row_id !== rowId &&
-        shiftsClash({ day: b.events.day, start: b.staffing_rows.start_time, end: b.staffing_rows.end_time }, { day: ev.day, start, end }),
+        shiftsClash(
+          { day: b.events.day, start: b.staffing_rows.start_time, end: b.staffing_rows.end_time },
+          { day: ev.day, start, end },
+        ),
     );
-  const { data: rates = [] } = useQuery({ queryKey: ["rates"], queryFn: async () => (await supabase.from("position_rates").select("*")).data ?? [] });
-  const { data: ot = [] } = useQuery({ queryKey: ["overtime"], queryFn: async () => (await supabase.from("overtime_rates").select("*").order("sort")).data ?? [] });
+  const { data: rates = [] } = useQuery({
+    queryKey: ["rates"],
+    queryFn: async () => (await supabase.from("position_rates").select("*")).data ?? [],
+  });
+  const { data: ot = [] } = useQuery({
+    queryKey: ["overtime"],
+    queryFn: async () =>
+      (await supabase.from("overtime_rates").select("*").order("sort")).data ?? [],
+  });
 
-  const refresh = () => { qc.invalidateQueries({ queryKey: ["rows", eventId] }); onChange(); };
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["rows", eventId] });
+    onChange();
+  };
   // Past events are read-only: no calling, adding, removing or confirming staff.
   const past = ev.day < hkToday();
 
   async function addRow(e: React.FormEvent) {
     e.preventDefault();
     if (!form.position_id) return toast.error("Pick a position");
-    const { error } = await supabase.from("staffing_rows").insert({ event_id: eventId, position_id: form.position_id, quantity: Number(form.quantity), start_time: form.start_time, end_time: form.end_time, break_minutes: Number(form.break_minutes) });
+    const { error } = await supabase.from("staffing_rows").insert({
+      event_id: eventId,
+      position_id: form.position_id,
+      quantity: Number(form.quantity),
+      start_time: form.start_time,
+      end_time: form.end_time,
+      break_minutes: Number(form.break_minutes),
+    });
     if (error) return toast.error(error.message);
     refresh();
   }
@@ -190,134 +319,370 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
   const holiday = isPublicHoliday(ev.notes, ev.day);
   // Gingers events list the Gingers positions first, Relish events the Relish ones.
   const gingersEvent = ev.account === "gingers";
-  const sortedPositions = [...positions].sort((a, b) => Number(isGingersPosition(b.name) === gingersEvent) - Number(isGingersPosition(a.name) === gingersEvent) || a.sort - b.sort);
-  let totalCost = 0, totalCharge = 0, missingRates = false;
-  const costLines: { id: string; name: string; photo: string | null | undefined; position: string; color: string | undefined; start: string; end: string; hours: number; cost: number | null }[] = [];
+  const sortedPositions = [...positions].sort(
+    (a, b) =>
+      Number(isGingersPosition(b.name) === gingersEvent) -
+        Number(isGingersPosition(a.name) === gingersEvent) || a.sort - b.sort,
+  );
+  let totalCost = 0,
+    totalCharge = 0,
+    missingRates = false;
+  const costLines: {
+    id: string;
+    name: string;
+    photo: string | null | undefined;
+    position: string;
+    color: string | undefined;
+    start: string;
+    end: string;
+    hours: number;
+    cost: number | null;
+  }[] = [];
   rows.forEach((r) => {
     const hours = shiftHours(r.start_time, r.end_time, r.break_minutes);
     const rate = rateOf(r.position_id);
     const people = r.invitations.filter((i) => i.status === "confirmed" || i.status === "accepted");
     people.forEach((i) => {
-      const c = shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.profiles?.personal_hourly_cost, positionRate: rate?.hourly_cost, publicHoliday: holiday });
+      const c = shiftPay({
+        position: r.positions?.name,
+        start: r.start_time,
+        end: r.end_time,
+        breakMinutes: r.break_minutes,
+        personalRate: i.profiles?.personal_hourly_cost,
+        positionRate: rate?.hourly_cost,
+        publicHoliday: holiday,
+      });
       if (c == null) missingRates = true;
       totalCost += c ?? 0;
-      costLines.push({ id: i.id, name: i.profiles?.full_name ?? "", photo: i.profiles?.photo_url, position: r.positions?.name ?? "", color: r.positions?.color, start: r.start_time, end: r.end_time, hours, cost: c });
+      costLines.push({
+        id: i.id,
+        name: i.profiles?.full_name ?? "",
+        photo: i.profiles?.photo_url,
+        position: r.positions?.name ?? "",
+        color: r.positions?.color,
+        start: r.start_time,
+        end: r.end_time,
+        hours,
+        cost: c,
+      });
     });
     if (rate?.client_rate == null) missingRates = true;
-    totalCharge += r.quantity * (isGingersPosition(r.positions?.name)
-      ? gingersClientCharge({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, clientRate: Number(rate?.client_rate ?? 0), publicHoliday: holiday })
-      : clientChargeForShift(r.start_time, r.end_time, r.break_minutes, Number(rate?.client_rate ?? 0), ot.map((o) => ({ ...o, client_rate: Number(o.client_rate) })), applyOt));
+    totalCharge +=
+      r.quantity *
+      (isGingersPosition(r.positions?.name)
+        ? gingersClientCharge({
+            position: r.positions?.name,
+            start: r.start_time,
+            end: r.end_time,
+            breakMinutes: r.break_minutes,
+            clientRate: Number(rate?.client_rate ?? 0),
+            publicHoliday: holiday,
+          })
+        : clientChargeForShift(
+            r.start_time,
+            r.end_time,
+            r.break_minutes,
+            Number(rate?.client_rate ?? 0),
+            ot.map((o) => ({ ...o, client_rate: Number(o.client_rate) })),
+            applyOt,
+          ));
   });
 
   return (
     <>
       {/* One list of people: past events show who worked (read only), upcoming events the staffing plan. */}
-      {past && <section className="space-y-2">
-        <div className="flex items-center gap-2">
-          <h2 className="mr-auto text-xl font-bold">Team</h2>
-          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Past event · read only</span>
-        </div>
-        {costLines.length === 0 ? <p className="text-sm text-muted-foreground">No staff recorded.</p> : (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {costLines.map((l) => (
-              <div key={l.id} className="flex items-center gap-3 rounded-lg border bg-card p-2">
-                <Avatar name={l.name} url={l.photo ?? null} />
-                <div className="text-sm"><div className="font-semibold">{l.name}</div><div className="text-muted-foreground"><PositionLabel name={l.position} color={l.color} /> · {hhmm(l.start)}–{hhmm(l.end)} · {l.hours.toFixed(1)} h · {hkd(l.cost)}</div></div>
-              </div>
-            ))}
+      {past && (
+        <section className="space-y-2">
+          <div className="flex items-center gap-2">
+            <h2 className="mr-auto text-xl font-bold">Team</h2>
+            <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              Past event · read only
+            </span>
           </div>
-        )}
-      </section>}
-      {!past && <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="mr-auto text-xl font-bold">Staffing plan</h2>
-        </div>
-        {rows.map((r) => {
-          const filled = r.invitations.filter((i) => i.status === "accepted" || i.status === "confirmed").length;
-          const groups = ["confirmed", "accepted", "invited", "declined", "cancelled", "closed"] as const;
-          const msg = `Hi! Gig Agenda: ${r.positions?.name} at ${ev.title}, ${fmtDay(ev.day)} ${hhmm(r.start_time)}–${hhmm(r.end_time)}${ev.venue ? ", " + ev.venue : ""}. Please check your invitation in the app.`;
-          return (
-            <div key={r.id} className="rounded-xl border bg-card p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <PositionLabel name={r.positions?.name} color={r.positions?.color} className="font-semibold" />
-                <span className="text-sm text-muted-foreground">{hhmm(r.start_time)}–{hhmm(r.end_time)}{r.break_minutes ? ` · ${r.break_minutes} min break` : ""}</span>
-                <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", filled >= r.quantity ? "bg-success/20 text-success" : "bg-warning/30 text-accent-foreground")}>{filled} of {r.quantity} accepted</span>
-                {!past && <div className="ml-auto flex gap-1">
-                  <Button size="sm" onClick={() => setCallRow(r.id)} disabled={filled >= r.quantity}><Megaphone className="h-4 w-4" /> Call staff</Button>
-                  <Button size="icon" variant="ghost" onClick={() => delRow(r.id)} aria-label="Remove row"><Trash2 className="h-4 w-4" /></Button>
-                </div>}
-              </div>
-              {r.invitations.length > 0 && (
-                <div className="mt-3 space-y-1.5">
-                  {groups.flatMap((g) => r.invitations.filter((i) => i.status === g)).map((i) => (
-                    <div key={i.id} className="flex flex-wrap items-center gap-2 text-sm">
-                      <Avatar name={i.profiles?.full_name ?? "?"} url={i.profiles?.photo_url} size={28} />
-                      <span className="font-medium">{i.profiles?.full_name}</span>
-                      {(() => {
-                        const busy = i.status === "invited" ? bookedElsewhere(i.user_id, r.id, r.start_time, r.end_time) : undefined;
-                        return busy ? (
-                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground" title={`Accepted ${busy.events.title} at an overlapping time`}>
-                            booked elsewhere · {busy.events.title}
-                          </span>
-                        ) : (
-                          <span className={cn("rounded-full px-2 py-0.5 text-xs capitalize", STATUS_STYLE[i.status])}>{i.status}{i.mode === "broadcast" && i.status === "invited" ? " · first-come" : ""}</span>
-                        );
-                      })()}
-                      {i.decline_reason && <span className="text-xs text-muted-foreground">“{i.decline_reason}”</span>}
-                      {(() => { const l = costLines.find((x) => x.id === i.id); return l ? <span className="text-xs text-muted-foreground">{l.hours.toFixed(1)} h · {hkd(l.cost)}</span> : null; })()}
-                      {!past && <div className="ml-auto flex gap-1">
-                        {i.status === "accepted" && <Button size="sm" variant="outline" onClick={() => setStatus(i.id, "confirmed")}><Check className="h-4 w-4" /> Confirm</Button>}
-                        {(i.status === "accepted" || i.status === "confirmed" || i.status === "invited") && (
-                          <Button size="icon" variant="ghost" onClick={() => setStatus(i.id, "cancelled")} aria-label="Cancel"><X className="h-4 w-4" /></Button>
-                        )}
-                        {i.profiles?.phone && (
-                          <a href={waLink(i.profiles.phone, msg)} target="_blank" rel="noreferrer" className="inline-flex h-8 w-8 items-center justify-center rounded-md text-success hover:bg-secondary" aria-label="WhatsApp">
-                            <MessageCircle className="h-4 w-4" />
-                          </a>
-                        )}
-                      </div>}
+          {costLines.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No staff recorded.</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {costLines.map((l) => (
+                <div key={l.id} className="flex items-center gap-3 rounded-lg border bg-card p-2">
+                  <Avatar name={l.name} url={l.photo ?? null} />
+                  <div className="text-sm">
+                    <div className="font-semibold">{l.name}</div>
+                    <div className="text-muted-foreground">
+                      <PositionLabel name={l.position} color={l.color} /> · {hhmm(l.start)}–
+                      {hhmm(l.end)} · {l.hours.toFixed(1)} h · {hkd(l.cost)}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-          );
-        })}
-
-        {!past && <form onSubmit={addRow} className="grid grid-cols-2 gap-2 rounded-xl border border-dashed p-3 sm:grid-cols-[1.5fr_4rem_1fr_1fr_5rem_auto] sm:items-end">
-          <div className="col-span-2 grid gap-1 sm:col-span-1">
-            <Label className="text-xs">Position</Label>
-            <Select value={form.position_id} onValueChange={(v) => setForm({ ...form, position_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Choose" /></SelectTrigger>
-              <SelectContent>{sortedPositions.map((p) => <SelectItem key={p.id} value={p.id}><PositionLabel name={p.name} color={p.color} /></SelectItem>)}</SelectContent>
-            </Select>
+          )}
+        </section>
+      )}
+      {!past && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h2 className="mr-auto text-xl font-bold">Staffing plan</h2>
           </div>
-          <div className="grid gap-1"><Label className="text-xs">How many</Label><Input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} /></div>
-          <div className="grid gap-1"><Label className="text-xs">Start</Label><Input type="time" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} /></div>
-          <div className="grid gap-1"><Label className="text-xs">End</Label><Input type="time" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} /></div>
-          <div className="grid gap-1"><Label className="text-xs">Break (min)</Label><Input type="number" min={0} value={form.break_minutes} onChange={(e) => setForm({ ...form, break_minutes: e.target.value })} /></div>
-          <Button type="submit" className="col-span-2 sm:col-span-1">Add</Button>
-        </form>}
-      </section>}
+          {rows.map((r) => {
+            const filled = r.invitations.filter(
+              (i) => i.status === "accepted" || i.status === "confirmed",
+            ).length;
+            const groups = [
+              "confirmed",
+              "accepted",
+              "invited",
+              "declined",
+              "cancelled",
+              "closed",
+            ] as const;
+            const msg = `Hi! Gig Agenda: ${r.positions?.name} at ${ev.title}, ${fmtDay(ev.day)} ${hhmm(r.start_time)}–${hhmm(r.end_time)}${ev.venue ? ", " + ev.venue : ""}. Please check your invitation in the app.`;
+            return (
+              <div key={r.id} className="rounded-xl border bg-card p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <PositionLabel
+                    name={r.positions?.name}
+                    color={r.positions?.color}
+                    className="font-semibold"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {hhmm(r.start_time)}–{hhmm(r.end_time)}
+                    {r.break_minutes ? ` · ${r.break_minutes} min break` : ""}
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-xs font-semibold",
+                      filled >= r.quantity
+                        ? "bg-success/20 text-success"
+                        : "bg-warning/30 text-accent-foreground",
+                    )}
+                  >
+                    {filled} of {r.quantity} accepted
+                  </span>
+                  {!past && (
+                    <div className="ml-auto flex gap-1">
+                      <Button
+                        size="sm"
+                        onClick={() => setCallRow(r.id)}
+                        disabled={filled >= r.quantity}
+                      >
+                        <Megaphone className="h-4 w-4" /> Call staff
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => delRow(r.id)}
+                        aria-label="Remove row"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {r.invitations.length > 0 && (
+                  <div className="mt-3 space-y-1.5">
+                    {groups
+                      .flatMap((g) => r.invitations.filter((i) => i.status === g))
+                      .map((i) => (
+                        <div key={i.id} className="flex flex-wrap items-center gap-2 text-sm">
+                          <Avatar
+                            name={i.profiles?.full_name ?? "?"}
+                            url={i.profiles?.photo_url}
+                            size={28}
+                          />
+                          <span className="font-medium">{i.profiles?.full_name}</span>
+                          {(() => {
+                            const busy =
+                              i.status === "invited"
+                                ? bookedElsewhere(i.user_id, r.id, r.start_time, r.end_time)
+                                : undefined;
+                            return busy ? (
+                              <span
+                                className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                                title={`Accepted ${busy.events.title} at an overlapping time, so this invitation can't be taken`}
+                              >
+                                occupied · {busy.events.title}
+                              </span>
+                            ) : (
+                              <span
+                                className={cn(
+                                  "rounded-full px-2 py-0.5 text-xs capitalize",
+                                  STATUS_STYLE[i.status],
+                                )}
+                              >
+                                {i.status}
+                                {i.mode === "broadcast" && i.status === "invited"
+                                  ? " · first-come"
+                                  : ""}
+                              </span>
+                            );
+                          })()}
+                          {i.decline_reason && (
+                            <span className="text-xs text-muted-foreground">
+                              “{i.decline_reason}”
+                            </span>
+                          )}
+                          {(() => {
+                            const l = costLines.find((x) => x.id === i.id);
+                            return l ? (
+                              <span className="text-xs text-muted-foreground">
+                                {l.hours.toFixed(1)} h · {hkd(l.cost)}
+                              </span>
+                            ) : null;
+                          })()}
+                          {!past && (
+                            <div className="ml-auto flex gap-1">
+                              {i.status === "accepted" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setStatus(i.id, "confirmed")}
+                                >
+                                  <Check className="h-4 w-4" /> Confirm
+                                </Button>
+                              )}
+                              {(i.status === "accepted" ||
+                                i.status === "confirmed" ||
+                                i.status === "invited") && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setStatus(i.id, "cancelled")}
+                                  aria-label="Cancel"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {i.profiles?.phone && (
+                                <a
+                                  href={waLink(i.profiles.phone, msg)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-success hover:bg-secondary"
+                                  aria-label="WhatsApp"
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {!past && (
+            <form
+              onSubmit={addRow}
+              className="grid grid-cols-2 gap-2 rounded-xl border border-dashed p-3 sm:grid-cols-[1.5fr_4rem_1fr_1fr_5rem_auto] sm:items-end"
+            >
+              <div className="col-span-2 grid gap-1 sm:col-span-1">
+                <Label className="text-xs">Position</Label>
+                <Select
+                  value={form.position_id}
+                  onValueChange={(v) => setForm({ ...form, position_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortedPositions.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        <PositionLabel name={p.name} color={p.color} />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-xs">How many</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={form.quantity}
+                  onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-xs">Start</Label>
+                <Input
+                  type="time"
+                  value={form.start_time}
+                  onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-xs">End</Label>
+                <Input
+                  type="time"
+                  value={form.end_time}
+                  onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-xs">Break (min)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.break_minutes}
+                  onChange={(e) => setForm({ ...form, break_minutes: e.target.value })}
+                />
+              </div>
+              <Button type="submit" className="col-span-2 sm:col-span-1">
+                Add
+              </Button>
+            </form>
+          )}
+        </section>
+      )}
 
       <section className="space-y-3">
         <div className="flex items-center gap-3">
           <h2 className="mr-auto text-xl font-bold">Costs</h2>
           <Switch id="ot" checked={applyOt} onCheckedChange={setApplyOt} />
-          <Label htmlFor="ot" className="text-sm">After-midnight rates</Label>
+          <Label htmlFor="ot" className="text-sm">
+            After-midnight rates
+          </Label>
         </div>
         {(holiday || rows.some((r) => isGingersPosition(r.positions?.name))) && (
           <p className="text-xs text-muted-foreground">
-            {holiday && <b className="text-foreground">Public holiday: staff costs are doubled{rows.some((r) => isGingersPosition(r.positions?.name)) ? ", and so are Gingers client rates" : ""}. </b>}
-            {rows.some((r) => isGingersPosition(r.positions?.name)) && "Gingers positions use Gingers' after-midnight client rates automatically (F&B Manager HK$290/h, Waiter and Commis Chef HK$240/h; on holidays HK$720/h and HK$570/h)."}
+            {holiday && (
+              <b className="text-foreground">
+                Public holiday: staff costs are doubled
+                {rows.some((r) => isGingersPosition(r.positions?.name))
+                  ? ", and so are Gingers client rates"
+                  : ""}
+                .{" "}
+              </b>
+            )}
+            {rows.some((r) => isGingersPosition(r.positions?.name)) &&
+              "Gingers positions use Gingers' after-midnight client rates automatically (F&B Manager HK$290/h, Waiter and Commis Chef HK$240/h; on holidays HK$720/h and HK$570/h)."}
           </p>
         )}
         <div className="grid grid-cols-3 gap-2">
           <Stat label="Staff cost" value={hkd(totalCost)} />
           <Stat label="Charge to client" value={hkd(totalCharge)} />
-          <Stat label="Margin" value={totalCharge ? `${hkd(totalCharge - totalCost)} · ${Math.round(((totalCharge - totalCost) / totalCharge) * 100)}%` : "—"} />
+          <Stat
+            label="Margin"
+            value={
+              totalCharge
+                ? `${hkd(totalCharge - totalCost)} · ${Math.round(((totalCharge - totalCost) / totalCharge) * 100)}%`
+                : "—"
+            }
+          />
         </div>
-        {missingRates && <p className="text-xs text-muted-foreground">Some hourly rates are empty — fill them in under <Link to="/settings" className="text-primary underline">Rates</Link>.</p>}
+        {missingRates && (
+          <p className="text-xs text-muted-foreground">
+            Some hourly rates are empty — fill them in under{" "}
+            <Link to="/settings" className="text-primary underline">
+              Rates
+            </Link>
+            .
+          </p>
+        )}
       </section>
 
       {callRow && !past && (
@@ -325,7 +690,10 @@ function OfficeStaffing({ eventId, ev, onChange }: { eventId: string; ev: EventR
           row={rows.find((r) => r.id === callRow)!}
           ev={ev}
           onClose={() => setCallRow(null)}
-          onSent={() => { setCallRow(null); refresh(); }}
+          onSent={() => {
+            setCallRow(null);
+            refresh();
+          }}
         />
       )}
     </>
