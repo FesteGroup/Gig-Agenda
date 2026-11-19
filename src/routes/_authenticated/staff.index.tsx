@@ -77,7 +77,7 @@ function Page() {
   });
   const today = hkToday();
   const [period, setPeriod] = useState<"month" | "last" | "year" | "all">("all");
-  const [sort, setSort] = useState<"name" | "hours">("name");
+  const [sort, setSort] = useState<"name" | "hours">("hours");
   const from = (() => {
     const [y = 2026, m = 1] = today.split("-").map(Number);
     if (period === "month") return `${today.slice(0, 7)}-01`;
