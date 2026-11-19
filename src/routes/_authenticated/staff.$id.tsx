@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe, usePositions } from "@/lib/me";
 import { Avatar } from "@/components/app/Avatar";
+import { RateSuggest } from "@/components/app/RateSuggest";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,6 +115,7 @@ function Page() {
           </div>
         </div>
         <div className="grid gap-1.5"><Label>Languages</Label><Input value={langs} onChange={(e) => setLangs(e.target.value)} placeholder="English, Cantonese, Mandarin" /></div>
+        {!office && me?.id === id && <RateSuggest userId={id} name={f.full_name} positionId={data?.p?.main_position_id ?? null} />}
         {office && (
           <>
             <div className="grid gap-1.5"><Label>Personal hourly cost (HKD, overrides position)</Label><Input type="number" value={f.personal_hourly_cost ?? ""} onChange={(e) => setF({ ...f, personal_hourly_cost: e.target.value === "" ? null : Number(e.target.value) })} /></div>
