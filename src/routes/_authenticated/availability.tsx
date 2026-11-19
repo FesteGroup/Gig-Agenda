@@ -101,15 +101,15 @@ function Page() {
         <h2 className="flex-1 text-center text-xl font-bold">{first.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</h2>
         <Button variant="ghost" size="icon" onClick={() => { const d = parseDay(month); d.setMonth(d.getMonth() + 1); setMonth(toDay(d)); }} aria-label="Next month"><ChevronRight /></Button>
       </div>
-      <div className="overflow-hidden rounded-xl border">
-        <div className="grid grid-cols-7 bg-secondary text-center text-xs font-semibold text-muted-foreground">{["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <div key={i} className="py-1.5">{d}</div>)}</div>
-        <div className="grid grid-cols-7">
+      <div className="rounded-xl border bg-card p-3">
+        <div className="grid grid-cols-7 gap-1.5 pb-1.5 text-center text-xs font-semibold text-muted-foreground">{["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <div key={i} className="rounded-md bg-secondary py-1.5">{d}</div>)}</div>
+        <div className="grid grid-cols-7 gap-1.5">
           {Array.from({ length: 42 }, (_, i) => addDays(from, i)).map((day) => {
             const a = get(day);
             const inMonth = parseDay(day).getMonth() === first.getMonth();
             const inv = invOn(day);
             return (
-              <button key={day} disabled={day < today} onClick={() => setEditDay(day)} className={cn("relative h-16 border-b border-r p-1 text-left text-xs disabled:opacity-40", availClass(a), !inMonth && "opacity-50")}>
+              <button key={day} disabled={day < today} onClick={() => setEditDay(day)} className={cn("relative h-16 rounded-lg border p-1.5 text-left text-xs disabled:opacity-40", availClass(a), !inMonth && "opacity-50")}>
                 <div className={cn("font-semibold", day === today && "text-primary")}>{parseDay(day).getDate()}</div>
                 {(inv.waiting > 0 || inv.booked > 0) && (
                   <span className="absolute right-1 top-1 flex gap-0.5" title={[inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} to answer`, inv.booked && `${inv.booked} booked`].filter(Boolean).join(" · ")}>
