@@ -179,7 +179,7 @@ function InvitePage() {
                         >
                           <div className="truncate text-xs font-semibold">{e.client_name ?? e.title}</div>
                           <div className="truncate text-[10px] text-muted-foreground">
-                            {[e.source === "manual" ? "Manual" : e.account === "gingers" ? "G" : "R", e.reference ? `#${e.reference}` : null, e.start_time ? hhmm(e.start_time) : null, e.pax ? `${e.pax} pax` : null].filter(Boolean).join(" · ")}
+                            {[e.source === "manual" ? "Manual" : e.account === "gingers" ? "G" : "R", e.start_time ? hhmm(e.start_time) : null, e.pax ? `${e.pax} pax` : null].filter(Boolean).join(" · ")}
                           </div>
                         </button>
                       );
