@@ -6,7 +6,7 @@ import { Camera, Check, Download, FileText, Receipt, X, Banknote, Undo2 } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
 import { useMyInvitations } from "@/lib/my-gigs";
-import { fmtDay, hkToday, hkd } from "@/lib/time";
+import { fmtDay, hkToday, hkdExact as hkd } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -256,23 +256,22 @@ function OfficeExpenses() {
             {people.map(([id, n]) => <SelectItem key={id} value={id}>{n}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
-          <SelectTrigger className="w-40" aria-label="Status"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="open">To handle</SelectItem>
-            <SelectItem value="submitted">Waiting</SelectItem>
-            <SelectItem value="approved">Approved, not paid</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="all">All</SelectItem>
-          </SelectContent>
-        </Select>
         <Button variant="outline" onClick={download} disabled={!list.length}><Download className="h-4 w-4" />CSV</Button>
       </div>
       <div className="flex flex-wrap gap-2 text-sm">
-        <Badge variant="outline">Waiting {hkd(sum("submitted"))}</Badge>
-        <Badge variant="outline" className="border-success text-success">Approved, to pay {hkd(sum("approved"))}</Badge>
-        <Badge variant="outline">Paid {hkd(sum("paid"))}</Badge>
+        {([
+          ["open", `To handle ${hkd(sum("submitted") + sum("approved"))}`],
+          ["submitted", `Waiting ${hkd(sum("submitted"))}`],
+          ["approved", `Approved, to pay ${hkd(sum("approved"))}`],
+          ["paid", `Paid ${hkd(sum("paid"))}`],
+          ["rejected", "Rejected"],
+          ["all", "All"],
+        ] as const).map(([v, label]) => (
+          <button key={v} type="button" onClick={() => setStatus(v)} aria-pressed={status === v}
+            className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors", status === v ? "border-success bg-success/10 text-success" : "border-border text-foreground hover:bg-secondary")}>
+            {label}
+          </button>
+        ))}
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="w-full text-sm">

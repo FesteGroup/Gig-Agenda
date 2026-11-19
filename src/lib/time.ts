@@ -60,3 +60,9 @@ export function hkd(n: number | null | undefined): string {
   if (n == null || Number.isNaN(n)) return "—";
   return "HK$" + Math.round(n).toLocaleString("en-HK");
 }
+
+/** HK$ with cents, never rounded (for expenses). */
+export function hkdExact(n: number | null | undefined): string {
+  if (n == null || Number.isNaN(n)) return "—";
+  return "HK$" + n.toLocaleString("en-HK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
