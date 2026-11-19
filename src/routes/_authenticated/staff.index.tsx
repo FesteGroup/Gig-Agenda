@@ -142,8 +142,8 @@ function Page() {
         <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
           <SelectTrigger className="w-40" aria-label="Sort"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="name">Sort by name</SelectItem>
             <SelectItem value="hours">Most hours first</SelectItem>
+            <SelectItem value="name">Sort by name</SelectItem>
           </SelectContent>
         </Select>
         {hoursError && <span className="text-destructive">Hours could not load: {(hoursError as Error).message}</span>}
