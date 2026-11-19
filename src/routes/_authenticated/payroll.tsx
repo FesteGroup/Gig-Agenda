@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export const Route = createFileRoute("/_authenticated/payroll")({
-  head: () => ({ meta: [{ title: "Reports — Gig Agenda" }, { name: "description", content: "Payroll export and open slots." }, { property: "og:title", content: "Reports — Gig Agenda" }, { property: "og:description", content: "Payroll export and open slots." }] }),
+  head: () => ({ meta: [{ title: "Reports — Gig Agenda" }, { name: "description", content: "Payroll and forecast staff cost." }, { property: "og:title", content: "Reports — Gig Agenda" }, { property: "og:description", content: "Payroll and forecast staff cost." }] }),
   component: Page,
 });
 
@@ -47,25 +47,6 @@ function Page() {
     },
   });
 
-  const { data: open = [] } = useQuery({
-    queryKey: ["open-slots", today],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("events")
-        .select("id,title,day,start_time,account,source,state, staffing_rows(quantity, positions(name), invitations(status))")
-        .gte("day", today)
-        .lte("day", addDays(today, 30))
-        .order("day");
-      return (data ?? [])
-        .map((e) => {
-          const missing = e.staffing_rows.map((r) => ({ pos: r.positions?.name ?? "", n: r.quantity - r.invitations.filter((i) => i.status === "accepted" || i.status === "confirmed").length })).filter((x) => x.n > 0);
-          return { ...e, missing };
-        })
-        // Confirmed events only (no quotes).
-        .filter((e) => e.missing.length && (e.source === "manual" || ["accepted", "confirmed", "live", "processing"].includes(String(e.state ?? "").toLowerCase())));
-    },
-  });
-
   function download() {
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const csv = [["Staff", "Event", "Date", "Position", "Hours", "Hourly cost (HKD)", "Amount (HKD)"], ...lines.map((l) => [l.staff, l.event, l.date, l.position, l.hours.toFixed(2), l.rate ?? "", l.amount?.toFixed(2) ?? ""])]
@@ -83,23 +64,8 @@ function Page() {
     <div className="grid items-start gap-8 lg:grid-cols-2">
       <div className="min-w-0 space-y-8">
       <section className="space-y-3">
-        <h1 className="text-3xl font-bold">Still to staff</h1>
-        <p className="text-sm text-muted-foreground">Next 30 days, events with empty slots.</p>
-        {open.length === 0 && <p className="text-sm text-muted-foreground">All planned slots are filled.</p>}
-        <div className="divide-y rounded-xl border bg-card">
-          {open.map((e) => (
-            <Link key={e.id} to="/events/$id" params={{ id: e.id }} className="flex flex-wrap items-center gap-2 p-3 hover:bg-secondary">
-              <span className="w-28 text-sm font-semibold">{fmtDay(e.day)} {hhmm(e.start_time)}</span>
-              <span className="flex-1 font-medium">{e.title}</span>
-              <span className="text-sm text-destructive">{e.missing.map((m) => `${m.n} ${m.pos}`).join(", ")} missing</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="mr-auto text-2xl font-bold">Payroll</h2>
+          <h1 className="mr-auto text-3xl font-bold">Payroll</h1>
           <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-44" />
           <Button onClick={download} disabled={!lines.length}><Download className="h-4 w-4" /> CSV</Button>
         </div>
@@ -159,7 +125,7 @@ function Forecast({ today }: { today: string }) {
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="mr-auto text-2xl font-bold">Forecast staff cost</h2>
+        <h1 className="mr-auto text-3xl font-bold">Forecast staff cost</h1>
         <ToggleGroup type="single" value={span} onValueChange={(v) => v && setSpan(v as typeof span)} variant="outline" size="sm">
           <ToggleGroupItem value="7">Week</ToggleGroupItem>
           <ToggleGroupItem value="14">2 weeks</ToggleGroupItem>

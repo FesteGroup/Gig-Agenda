@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
 import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, CalendarCheck, LogOut, Home, UserCircle, Send, Briefcase, Utensils, Receipt } from "lucide-react";
@@ -26,7 +26,11 @@ const staffNav = [
   { to: "/expenses", label: "Expenses", icon: Receipt, colour: "bg-rose", text: "text-rose" },
 ] as const;
 
+// Pages that use the full screen width.
+const WIDE = ["/payroll"];
+
 export function AppShell({ children }: { children: ReactNode }) {
+  const path = useRouterState({ select: (r) => r.location.pathname });
   const { data: me } = useMe();
   const qc = useQueryClient();
   useEnsureGingersPositions(me?.canOffice);
@@ -120,7 +124,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-5">{children}</main>
+      <main className={cn("mx-auto px-4 py-5", WIDE.includes(path) ? "max-w-none lg:px-6" : "max-w-7xl")}>{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-card md:hidden" style={{ gridTemplateColumns: `repeat(${nav.length}, 1fr)` }}>
         {nav.map((n) => (
           <Link key={n.to} to={n.to} className={cn("flex flex-col items-center gap-0.5 py-2 text-[11px] text-muted-foreground")} activeProps={{ className: "!text-foreground font-semibold" }}>
