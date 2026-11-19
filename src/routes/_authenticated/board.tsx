@@ -34,7 +34,7 @@ function Board() {
         supabase.from("profiles").select("id,full_name,main_position_id,other_position_ids").eq("active", true).order("full_name"),
         supabase.from("availability").select("*").gte("day", today).lte("day", end),
         supabase.from("availability_patterns").select("*"),
-        supabase.from("invitations").select("user_id,status, events!inner(day)").in("status", ["invited", "accepted", "confirmed", "declined"]).gte("events.day", today).lte("events.day", end),
+        supabase.from("invitations").select("user_id,status, events!inner(day)").in("status", ["invited", "accepted", "confirmed"]).gte("events.day", today).lte("events.day", end),
       ]);
       return { people: p.data ?? [], avail: a.data ?? [], patterns: pt.data ?? [], invites: (inv.data ?? []) as { user_id: string; status: string; events: { day: string } }[] };
     },
@@ -45,7 +45,7 @@ function Board() {
   const cell = (uid: string, day: string) => resolveAvail(day, data?.avail.find((a) => a.user_id === uid && a.day === day), data?.patterns.filter((x) => x.user_id === uid));
   const invOn = (uid: string, day: string) => {
     const l = (data?.invites ?? []).filter((i) => i.user_id === uid && i.events.day === day);
-    return { waiting: l.filter((i) => i.status === "invited").length, booked: l.filter((i) => i.status === "accepted" || i.status === "confirmed").length, declined: l.filter((i) => i.status === "declined").length };
+    return { waiting: l.filter((i) => i.status === "invited").length, booked: l.filter((i) => i.status !== "invited").length };
   };
   const posName = (id: string | null) => positions.find((p) => p.id === id)?.name ?? "";
   const missing = people.filter((p) => days.some((d) => !cell(p.id, d)));
@@ -90,7 +90,6 @@ function Board() {
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-destructive/15" /> Unavailable</span>
         <span className="ml-auto flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full border-2 border-primary" /> Invited, waiting for an answer</span>
         <span className="flex items-center gap-1"><b className="text-sm leading-none text-primary">✓</b> Invitation accepted</span>
-        <span className="flex items-center gap-1"><i className="flex h-3 w-3 items-center justify-center rounded-full bg-destructive text-[8px] font-bold not-italic leading-none text-white">✕</i> Invitation declined</span>
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="text-xs">
@@ -102,12 +101,11 @@ function Board() {
                 {days.map((d) => {
                   const a = cell(p.id, d);
                   const inv = invOn(p.id, d);
-                  const note = [availLabel(a), inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} waiting`, inv.booked && `${inv.booked} booked`, inv.declined && `${inv.declined} declined`].filter(Boolean).join(" · ");
+                  const note = [availLabel(a), inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} waiting`, inv.booked && `${inv.booked} booked`].filter(Boolean).join(" · ");
                   return (
                     <td key={d} className={cn("relative border-l p-0.5 text-center", availClass(a))} title={note}>
                       {inv.booked > 0 ? <span className="text-base font-bold leading-none text-primary">✓</span> : a?.status === "partial" ? <span className="text-[9px] leading-none">{hhmm(a.start_time)}<br />{hhmm(a.end_time)}</span> : a?.status === "unavailable" ? "✕" : ""}
                       {inv.waiting > 0 && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-primary bg-card" />}
-                      {inv.declined > 0 && <span className="absolute left-0.5 top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-destructive text-[8px] font-bold leading-none text-white">✕</span>}
                     </td>
                   );
                 })}

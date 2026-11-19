@@ -39,7 +39,7 @@ function Page() {
       const [a, p, inv] = await Promise.all([
         supabase.from("availability").select("*").eq("user_id", me!.id).gte("day", addDays(from, -7)).lte("day", to),
         supabase.from("availability_patterns").select("*").eq("user_id", me!.id),
-        supabase.from("invitations").select("status, events!inner(day)").eq("user_id", me!.id).in("status", ["invited", "accepted", "confirmed"]).gte("events.day", from).lte("events.day", to),
+        supabase.from("invitations").select("status, events!inner(day)").eq("user_id", me!.id).in("status", ["invited", "accepted", "confirmed", "declined"]).gte("events.day", from).lte("events.day", to),
       ]);
       return { days: a.data ?? [], patterns: p.data ?? [], invites: (inv.data ?? []) as { status: string; events: { day: string } }[] };
     },
@@ -84,7 +84,7 @@ function Page() {
   // Invitations on a day: waiting for an answer, or already accepted / confirmed.
   const invOn = (day: string) => {
     const l = (data?.invites ?? []).filter((i) => i.events.day === day);
-    return { waiting: l.filter((i) => i.status === "invited").length, booked: l.filter((i) => i.status !== "invited").length };
+    return { waiting: l.filter((i) => i.status === "invited").length, booked: l.filter((i) => i.status === "accepted" || i.status === "confirmed").length, declined: l.filter((i) => i.status === "declined").length };
   };
   const get = (day: string) => resolveAvail(day, data?.days.find((d) => d.day === day), data?.patterns ?? []);
 
@@ -111,10 +111,11 @@ function Page() {
             return (
               <button key={day} disabled={day < today} onClick={() => setEditDay(day)} className={cn("relative h-16 rounded-lg border p-1.5 text-left text-xs disabled:opacity-40", availClass(a), !inMonth && "opacity-50")}>
                 <div className={cn("font-semibold", day === today && "text-primary")}>{parseDay(day).getDate()}</div>
-                {(inv.waiting > 0 || inv.booked > 0) && (
-                  <span className="absolute right-1 top-1 flex gap-0.5" title={[inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} to answer`, inv.booked && `${inv.booked} booked`].filter(Boolean).join(" · ")}>
+                {(inv.waiting > 0 || inv.booked > 0 || inv.declined > 0) && (
+                  <span className="absolute right-1 top-1 flex gap-0.5" title={[inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} to answer`, inv.booked && `${inv.booked} booked`, inv.declined && `${inv.declined} declined`].filter(Boolean).join(" · ")}>
                     {inv.waiting > 0 && <span className="flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-primary bg-card px-0.5 text-[9px] font-bold leading-none text-primary">{inv.waiting}</span>}
                     {inv.booked > 0 && <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold leading-none text-primary-foreground">{inv.booked}</span>}
+                    {inv.declined > 0 && <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-0.5 text-[9px] font-bold leading-none text-white">{inv.declined}</span>}
                   </span>
                 )}
                 {a?.status === "partial" && <div className="text-[10px] leading-tight">{hhmm(a.start_time)}–{hhmm(a.end_time)}</div>}
@@ -130,6 +131,7 @@ function Page() {
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-destructive/15" /> Unavailable</span>
         <span className="ml-auto flex items-center gap-1"><i className="h-3 w-3 rounded-full border-2 border-primary" /> Invitation to answer</span>
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded-full bg-primary" /> Booked</span>
+        <span className="flex items-center gap-1"><i className="h-3 w-3 rounded-full bg-destructive" /> Declined</span>
       </div>
 
       <section className="space-y-2">
