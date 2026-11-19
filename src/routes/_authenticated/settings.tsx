@@ -30,6 +30,7 @@ function Page() {
     },
   });
   const [newName, setNewName] = useState("");
+  const [openPos, setOpenPos] = useState<string[]>([]);
   const refresh = () => { qc.invalidateQueries({ queryKey: ["settings"] }); qc.invalidateQueries({ queryKey: ["positions"] }); qc.invalidateQueries({ queryKey: ["rates"] }); qc.invalidateQueries({ queryKey: ["overtime"] }); };
 
   async function updPos(id: string, patch: { name?: string; color?: string }) {
@@ -98,12 +99,17 @@ function Page() {
                           <Input defaultValue={p.name} onBlur={(e) => e.target.value !== p.name && updPos(p.id, { name: e.target.value })} className="h-11 text-base md:text-base" />
                         )}
                       </div>
+                      {workers.length > 0 && (
+                        <button type="button" onClick={() => setOpenPos((x) => (x.includes(p.id) ? x.filter((y) => y !== p.id) : [...x, p.id]))} className="mt-1 text-xs font-medium text-primary hover:underline">
+                          {openPos.includes(p.id) ? "Hide" : `View all (${workers.length})`}
+                        </button>
+                      )}
                     </td>
                     <td className="p-3"><Input type="number" defaultValue={r?.hourly_cost ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.hourly_cost ?? null) && updRate(p.id, { hourly_cost: num(e.target.value) })} className="h-11 text-base md:text-base" /></td>
                     <td className="p-3"><Input type="number" defaultValue={r?.client_rate ?? ""} placeholder="—" onBlur={(e) => num(e.target.value) !== (r?.client_rate ?? null) && updRate(p.id, { client_rate: num(e.target.value) })} className="h-11 text-base md:text-base" /></td>
                     <td className="p-3"><Button size="icon" variant="ghost" onClick={() => delPos(p.id)} aria-label="Delete" className="h-11 w-11"><Trash2 className="h-5 w-5" /></Button></td>
                   </tr>
-                  {workers.length > 0 && (
+                  {workers.length > 0 && openPos.includes(p.id) && (
                     <tr>
                       <td />
                       <td colSpan={4} className="px-3 pb-3">
