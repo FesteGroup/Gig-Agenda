@@ -5,6 +5,7 @@ import { Bell, CalendarDays, Grid3x3, Users, Settings, FileSpreadsheet, Inbox, C
 import { supabase } from "@/integrations/supabase/client";
 import { setView, useMe } from "@/lib/me";
 import { useEnsureGingersPositions } from "@/lib/gingers-setup";
+import { useAutoImport } from "@/lib/auto-import";
 import { cn } from "@/lib/utils";
 
 // Each section has its own colour (icon chip in the header, icon in the mobile bar).
@@ -29,6 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: me } = useMe();
   const qc = useQueryClient();
   useEnsureGingersPositions(me?.canOffice);
+  useAutoImport(me?.canOffice);
   const navigate = useNavigate();
   const nav = me?.isOffice ? officeNav : staffNav;
 
