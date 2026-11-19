@@ -128,7 +128,7 @@ function Page() {
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-success/25" /> Available</span>
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-warning/35" /> From–to</span>
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-destructive/15" /> Unavailable</span>
-        <span className="flex items-center gap-1"><i className="h-3 w-3 rounded-full border-2 border-primary" /> Invitation to answer</span>
+        <span className="ml-auto flex items-center gap-1"><i className="h-3 w-3 rounded-full border-2 border-primary" /> Invitation to answer</span>
         <span className="flex items-center gap-1"><i className="h-3 w-3 rounded-full bg-primary" /> Booked</span>
       </div>
 
