@@ -43,7 +43,12 @@ function Page() {
       const p = await supabase.from("profiles").select("*").eq("id", id).single();
       const notes = office ? (await supabase.from("staff_notes").select("notes").eq("user_id", id).maybeSingle()).data?.notes ?? "" : "";
       const roles = office ? (await supabase.from("user_roles").select("role").eq("user_id", id)).data ?? [] : [];
-      return { p: p.data, notes, isOffice: roles.some((r) => r.role === "office") };
+      // Latest rate suggestion from this worker (sent to the office as a notification).
+      const sug = office
+        ? (await supabase.from("notifications").select("title,created_at").eq("link", `/staff/${id}`).like("title", "Rate suggestion:%").order("created_at", { ascending: false }).limit(1).maybeSingle()).data
+        : null;
+      const suggested = sug ? Number(/HK\$(\d+(?:\.\d+)?)\/h/.exec(sug.title)?.[1] ?? NaN) : NaN;
+      return { p: p.data, notes, isOffice: roles.some((r) => r.role === "office"), suggestion: Number.isFinite(suggested) ? { rate: suggested, at: sug!.created_at } : null };
     },
   });
 
@@ -118,7 +123,17 @@ function Page() {
         {!office && me?.id === id && <RateSuggest userId={id} name={f.full_name} positionId={data?.p?.main_position_id ?? null} />}
         {office && (
           <>
-            <div className="grid gap-1.5"><Label>Personal hourly cost (HKD, overrides position)</Label><Input type="number" value={f.personal_hourly_cost ?? ""} onChange={(e) => setF({ ...f, personal_hourly_cost: e.target.value === "" ? null : Number(e.target.value) })} /></div>
+            <div className="grid gap-1.5">
+              <Label>Personal hourly cost (HKD, overrides position)</Label>
+              <div className="flex items-center gap-3">
+                <Input type="number" value={f.personal_hourly_cost ?? ""} onChange={(e) => setF({ ...f, personal_hourly_cost: e.target.value === "" ? null : Number(e.target.value) })} className="flex-1" />
+                {data?.suggestion && data.suggestion.rate !== f.personal_hourly_cost && (
+                  <button type="button" onClick={() => setF({ ...f, personal_hourly_cost: data.suggestion!.rate })} title="Use this rate (then Save)" className="shrink-0 text-sm italic text-muted-foreground hover:text-foreground">
+                    Suggested HK${data.suggestion.rate}/h · {new Date(data.suggestion.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="grid gap-1.5"><Label>Office notes (staff can't see)</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
             <div className="flex items-center gap-2"><Switch checked={f.active} onCheckedChange={(v) => setF({ ...f, active: v })} id="active" /><Label htmlFor="active">Show</Label></div>
             {me?.id !== id && <div className="flex items-center gap-2"><Switch checked={!!data?.isOffice} onCheckedChange={toggleOffice} id="off" /><Label htmlFor="off">Office access</Label></div>}
