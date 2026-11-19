@@ -30,18 +30,23 @@ function Board() {
   const { data } = useQuery({
     queryKey: ["board", today, end],
     queryFn: async () => {
-      const [p, a, pt] = await Promise.all([
+      const [p, a, pt, inv] = await Promise.all([
         supabase.from("profiles").select("id,full_name,main_position_id,other_position_ids").eq("active", true).order("full_name"),
         supabase.from("availability").select("*").gte("day", today).lte("day", end),
         supabase.from("availability_patterns").select("*"),
+        supabase.from("invitations").select("user_id,status, events!inner(day)").in("status", ["invited", "accepted", "confirmed"]).gte("events.day", today).lte("events.day", end),
       ]);
-      return { people: p.data ?? [], avail: a.data ?? [], patterns: pt.data ?? [] };
+      return { people: p.data ?? [], avail: a.data ?? [], patterns: pt.data ?? [], invites: (inv.data ?? []) as { user_id: string; status: string; events: { day: string } }[] };
     },
   });
 
   const all = data?.people ?? [];
   const people = all.filter((p) => (who === "all" || p.id === who) && (pos === "all" || p.main_position_id === pos || p.other_position_ids.includes(pos)));
   const cell = (uid: string, day: string) => resolveAvail(day, data?.avail.find((a) => a.user_id === uid && a.day === day), data?.patterns.filter((x) => x.user_id === uid));
+  const invOn = (uid: string, day: string) => {
+    const l = (data?.invites ?? []).filter((i) => i.user_id === uid && i.events.day === day);
+    return { waiting: l.filter((i) => i.status === "invited").length, booked: l.filter((i) => i.status !== "invited").length };
+  };
   const posName = (id: string | null) => positions.find((p) => p.id === id)?.name ?? "";
   const missing = people.filter((p) => days.some((d) => !cell(p.id, d)));
   const [asking, setAsking] = useState(false);
@@ -79,6 +84,10 @@ function Board() {
         <span className="ml-auto text-sm text-muted-foreground">{missing.length} of {people.length} still to answer</span>
         <Button size="sm" onClick={ask} disabled={asking || !missing.length} className="gap-1.5"><BellRing className="h-4 w-4" />Ask for availability</Button>
       </div>
+      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full border-2 border-primary" /> Invited, waiting for an answer</span>
+        <span className="flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full bg-primary" /> Booked (accepted or confirmed)</span>
+      </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="text-xs">
           <thead><tr className="bg-secondary"><th className="sticky left-0 min-w-40 bg-secondary p-2 text-left">Worker</th>{days.map((d) => <th key={d} className="w-14 min-w-14 p-1 text-center font-medium"><div>{parseDay(d).toLocaleDateString("en-GB", { weekday: "narrow" })}</div><div>{parseDay(d).getDate()}</div></th>)}</tr></thead>
@@ -86,7 +95,18 @@ function Board() {
             {people.map((p) => (
               <tr key={p.id} className="h-12 border-t">
                 <td className="sticky left-0 bg-card p-2"><div className="font-medium">{p.full_name}</div><div className="text-muted-foreground">{posName(p.main_position_id) || posName(p.other_position_ids[0] ?? null) || "\u00a0"}</div></td>
-                {days.map((d) => { const a = cell(p.id, d); return <td key={d} className={cn("border-l p-0.5 text-center", availClass(a))} title={availLabel(a)}>{a?.status === "partial" ? <span className="text-[9px] leading-none">{hhmm(a.start_time)}<br />{hhmm(a.end_time)}</span> : a?.status === "available" ? "✓" : a?.status === "unavailable" ? "✕" : ""}</td>; })}
+                {days.map((d) => {
+                  const a = cell(p.id, d);
+                  const inv = invOn(p.id, d);
+                  const note = [availLabel(a), inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} waiting`, inv.booked && `${inv.booked} booked`].filter(Boolean).join(" · ");
+                  return (
+                    <td key={d} className={cn("relative border-l p-0.5 text-center", availClass(a))} title={note}>
+                      {a?.status === "partial" ? <span className="text-[9px] leading-none">{hhmm(a.start_time)}<br />{hhmm(a.end_time)}</span> : a?.status === "available" ? "✓" : a?.status === "unavailable" ? "✕" : ""}
+                      {inv.waiting > 0 && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-primary bg-card" />}
+                      {inv.booked > 0 && <span className={cn("absolute top-0.5 h-2.5 w-2.5 rounded-full bg-primary", inv.waiting > 0 ? "right-3.5" : "right-0.5")} />}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
