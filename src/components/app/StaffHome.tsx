@@ -1,9 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyInvitations, type MyInvitation } from "@/lib/my-gigs";
-import { fmtDay, hhmm, hkToday, hkd, shiftHours } from "@/lib/time";
+import { addDays, fmtDay, hhmm, hkToday, hkd, hkdExact, shiftHours } from "@/lib/time";
+import { isPublicHoliday, shiftPay } from "@/lib/pay";
+import { cn } from "@/lib/utils";
 import { InvitationCard } from "./InvitationCard";
 import type { Me } from "@/lib/me";
 
@@ -18,6 +21,14 @@ export function StaffHome({ me }: { me: Me }) {
   const monthGigs = data.filter((i) => i.status === "confirmed" && i.events!.day.startsWith(month));
   const hours = monthGigs.reduce((s, i) => s + shiftHours(i.staffing_rows!.start_time, i.staffing_rows!.end_time, i.staffing_rows!.break_minutes), 0);
   const earnings = monthGigs.reduce((s, i) => s + (i.rate ?? 0) * shiftHours(i.staffing_rows!.start_time, i.staffing_rows!.end_time, i.staffing_rows!.break_minutes), 0);
+  // Forecast earnings: same rule as the office forecast (accepted and confirmed gigs from today, on each shift's hours and pay rules).
+  const [span, setSpan] = useState<7 | 14 | 30>(7);
+  const until = addDays(today, span - 1);
+  const ahead = data.filter((i) => (i.status === "accepted" || i.status === "confirmed") && i.staffing_rows && i.events!.day >= today && i.events!.day <= until);
+  const forecast = ahead.reduce((s, i) => {
+    const r = i.staffing_rows!;
+    return s + (shiftPay({ position: r.positions?.name, start: r.start_time, end: r.end_time, breakMinutes: r.break_minutes, personalRate: i.rate, publicHoliday: isPublicHoliday(null, i.events!.day) }) ?? 0);
+  }, 0);
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -26,10 +37,21 @@ export function StaffHome({ me }: { me: Me }) {
         <h1 className="text-3xl font-bold">My gigs</h1>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat label="Gigs this month" value={String(monthGigs.length)} />
         <Stat label="Hours" value={hours.toFixed(1)} />
         <Stat label="Earnings" value={hkd(earnings)} />
+        <div className="rounded-xl border bg-card p-3">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="mr-auto">Forecast</span>
+            {([[7, "W"], [14, "2W"], [30, "M"]] as const).map(([v, l]) => (
+              <button key={v} type="button" onClick={() => setSpan(v)} aria-pressed={span === v} title={v === 7 ? "Next week" : v === 14 ? "Next 2 weeks" : "Next month"}
+                className={cn("rounded px-1 text-[10px] font-semibold", span === v ? "bg-primary text-primary-foreground" : "hover:bg-secondary")}>{l}</button>
+            ))}
+          </div>
+          <div className="font-display text-xl font-bold">{hkdExact(forecast)}</div>
+          <div className="text-[10px] text-muted-foreground">{ahead.length} gig{ahead.length === 1 ? "" : "s"} until {fmtDay(until, { day: "numeric", month: "short" })}</div>
+        </div>
       </div>
 
       {pending.length > 0 && (
