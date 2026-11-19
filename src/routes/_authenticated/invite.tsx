@@ -158,14 +158,14 @@ function InvitePage() {
               {pickedEvents.length > 0 && <Button variant="ghost" size="sm" onClick={() => setPickedEvents([])}>Clear ({pickedEvents.length})</Button>}
             </div>
             {!eventDays.length && <p className="text-sm text-muted-foreground">No confirmed events in the next 4 weeks. Add one on the <Link to="/home" className="underline">Events</Link> page.</p>}
-            <div className="space-y-4">
+            <div className="space-y-2">
               {eventDays.map((d) => (
-                <div key={d} className="grid gap-2 md:grid-cols-[7rem_1fr]">
-                  <div className="pt-2">
-                    <div className="text-sm font-bold">{parseDay(d).toLocaleDateString("en-GB", { weekday: "long" })}</div>
-                    <div className="text-sm text-muted-foreground">{parseDay(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                <div key={d} className="grid gap-1.5 md:grid-cols-[6.5rem_1fr] md:items-center">
+                  <div className="text-sm">
+                    <span className="font-bold">{parseDay(d).toLocaleDateString("en-GB", { weekday: "short" })}</span>{" "}
+                    <span className="text-muted-foreground">{parseDay(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="flex flex-wrap gap-1.5">
                     {events.filter((e) => e.day === d).map((e) => {
                       const on = pickedEvents.includes(e.id);
                       return (
@@ -174,15 +174,13 @@ function InvitePage() {
                           type="button"
                           aria-pressed={on}
                           onClick={() => setPickedEvents((x) => (on ? x.filter((y) => y !== e.id) : [...x, e.id]))}
-                          className={cn("rounded-xl border p-3 text-left transition-colors", on ? "border-primary bg-primary/10 ring-2 ring-primary" : "hover:bg-secondary")}
+                          title={[e.client_name ?? e.title, e.client_name && e.title !== e.client_name ? e.title : null, e.pax ? `${e.pax} guests` : null, e.venue].filter(Boolean).join(" · ")}
+                          className={cn("max-w-[13rem] rounded-lg border px-2.5 py-1 text-center transition-colors", on ? "border-primary bg-primary/10 ring-2 ring-primary" : "hover:bg-secondary")}
                         >
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="rounded-full border px-2 py-0.5 font-semibold">{e.source === "manual" ? "Manual" : e.account === "gingers" ? "Gingers" : "Relish"}</span>
-                            {e.reference && <span className="text-muted-foreground">#{e.reference}</span>}
-                            {e.start_time && <span className="ml-auto font-semibold">{hhmm(e.start_time)}</span>}
+                          <div className="truncate text-xs font-semibold">{e.client_name ?? e.title}</div>
+                          <div className="truncate text-[10px] text-muted-foreground">
+                            {[e.source === "manual" ? "Manual" : e.account === "gingers" ? "G" : "R", e.reference ? `#${e.reference}` : null, e.start_time ? hhmm(e.start_time) : null, e.pax ? `${e.pax} pax` : null].filter(Boolean).join(" · ")}
                           </div>
-                          <div className="mt-1.5 truncate font-semibold">{e.client_name ?? e.title}</div>
-                          <div className="truncate text-xs text-muted-foreground">{[e.client_name && e.title !== e.client_name ? e.title : null, e.pax ? `${e.pax} guests` : null, e.venue].filter(Boolean).join(" · ") || "\u00a0"}</div>
                         </button>
                       );
                     })}
