@@ -85,8 +85,11 @@ function Board() {
         <Button size="sm" onClick={ask} disabled={asking || !missing.length} className="gap-1.5"><BellRing className="h-4 w-4" />Ask for availability</Button>
       </div>
       <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full border-2 border-primary" /> Invited, waiting for an answer</span>
-        <span className="flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full bg-primary" /> Booked (accepted or confirmed)</span>
+        <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-success/25" /> Available</span>
+        <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-warning/35" /> From–to</span>
+        <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-destructive/15" /> Unavailable</span>
+        <span className="ml-auto flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full border-2 border-primary" /> Invited, waiting for an answer</span>
+        <span className="flex items-center gap-1"><b className="text-sm leading-none text-primary">✓</b> Invitation accepted</span>
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="text-xs">
@@ -101,9 +104,8 @@ function Board() {
                   const note = [availLabel(a), inv.waiting && `${inv.waiting} invitation${inv.waiting > 1 ? "s" : ""} waiting`, inv.booked && `${inv.booked} booked`].filter(Boolean).join(" · ");
                   return (
                     <td key={d} className={cn("relative border-l p-0.5 text-center", availClass(a))} title={note}>
-                      {a?.status === "partial" ? <span className="text-[9px] leading-none">{hhmm(a.start_time)}<br />{hhmm(a.end_time)}</span> : a?.status === "available" ? "✓" : a?.status === "unavailable" ? "✕" : ""}
+                      {inv.booked > 0 ? <span className="text-base font-bold leading-none text-primary">✓</span> : a?.status === "partial" ? <span className="text-[9px] leading-none">{hhmm(a.start_time)}<br />{hhmm(a.end_time)}</span> : a?.status === "unavailable" ? "✕" : ""}
                       {inv.waiting > 0 && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-primary bg-card" />}
-                      {inv.booked > 0 && <span className={cn("absolute top-0.5 h-2.5 w-2.5 rounded-full bg-primary", inv.waiting > 0 ? "right-3.5" : "right-0.5")} />}
                     </td>
                   );
                 })}
