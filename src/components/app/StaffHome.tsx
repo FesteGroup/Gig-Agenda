@@ -8,6 +8,8 @@ import { addDays, fmtDay, hhmm, hkToday, hkd, hkdExact, shiftHours } from "@/lib
 import { isPublicHoliday, shiftPay } from "@/lib/pay";
 import { cn } from "@/lib/utils";
 import { InvitationCard } from "./InvitationCard";
+import { RateSuggest } from "./RateSuggest";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Me } from "@/lib/me";
 
 export function StaffHome({ me }: { me: Me }) {
@@ -47,6 +49,13 @@ export function StaffHome({ me }: { me: Me }) {
   );
   // Forecast earnings: same rule as the office forecast (accepted and confirmed gigs from today, on each shift's hours and pay rules).
   const [span, setSpan] = useState<7 | 14 | 30>(7);
+  const [rateOpen, setRateOpen] = useState(false);
+  const { data: mainPos = null } = useQuery({
+    queryKey: ["my-main-position", me.id],
+    queryFn: async () =>
+      (await supabase.from("profiles").select("main_position_id").eq("id", me.id).maybeSingle()).data
+        ?.main_position_id ?? null,
+  });
   const until = addDays(today, span - 1);
   const ahead = data.filter(
     (i) =>
@@ -81,7 +90,14 @@ export function StaffHome({ me }: { me: Me }) {
         <Stat label="Gigs this month" value={String(monthGigs.length)} />
         <Stat label="Hours" value={hours.toFixed(1)} />
         <Stat label="Earnings" value={hkd(earnings)} />
-        <div className="rounded-xl border bg-card p-3">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setRateOpen(true)}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setRateOpen(true)}
+          title="My hourly rate"
+          className="cursor-pointer rounded-xl border bg-card p-3 transition-colors hover:bg-secondary"
+        >
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span className="mr-auto">Forecast</span>
             {(
@@ -94,7 +110,10 @@ export function StaffHome({ me }: { me: Me }) {
               <button
                 key={v}
                 type="button"
-                onClick={() => setSpan(v)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSpan(v);
+                }}
                 aria-pressed={span === v}
                 title={v === 7 ? "Next week" : v === 14 ? "Next 2 weeks" : "Next month"}
                 className={cn(
@@ -109,10 +128,25 @@ export function StaffHome({ me }: { me: Me }) {
           <div className="font-display text-xl font-bold">{hkdExact(forecast)}</div>
           <div className="text-[10px] text-muted-foreground">
             {ahead.length} gig{ahead.length === 1 ? "" : "s"} until{" "}
-            {fmtDay(until, { day: "numeric", month: "short" })}
+            {fmtDay(until, { day: "numeric", month: "short" })} ·{" "}
+            <span className="font-medium text-primary">My rate</span>
           </div>
         </div>
       </div>
+      <Dialog open={rateOpen} onOpenChange={setRateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>My hourly rate</DialogTitle>
+          </DialogHeader>
+          {mainPos ? (
+            <RateSuggest userId={me.id} name={me.fullName} positionId={mainPos} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Your main position isn't set yet. Ask the office to add it.
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {pending.length > 0 && (
         <section className="space-y-3">
