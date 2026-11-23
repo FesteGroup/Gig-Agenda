@@ -57,6 +57,13 @@
       "when": 1795419542451,
       "tag": "0007_allow_both_relish_office_domains",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795427014310,
+      "tag": "0008_allow_gingers_office_domain",
+      "breakpoints": true
     }
   ]
 }

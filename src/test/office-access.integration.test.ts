@@ -10,6 +10,16 @@ function query(sql: string): Record<string, unknown>[] {
 }
 
 describe("company office access", () => {
+  it("allows @gingers.com.hk accounts", () => {
+    expect(query("select public.office_signup_allowed('office@gingers.com.hk', false) as allowed")[0]?.["allowed"]).toBe(true);
+  });
+
+  it("does not grant office access to Gingers lookalike or staff subdomains", () => {
+    const rows = query("select email, public.office_signup_allowed(email, false) as allowed from unnest(array['server@staff.gingers.com.hk', 'server@gingers.com.hk.evil.example', 'server@notgingers.com.hk']) as email");
+    expect(rows).toHaveLength(3);
+    for (const row of rows) expect(row["allowed"]).toBe(false);
+  });
+
   it("allows @relish.com accounts", () => {
     expect(query("select public.office_signup_allowed('office@relish.com', false) as allowed")[0]?.["allowed"]).toBe(true);
   });

@@ -1,4 +1,5 @@
 # Gig Agenda roadmap
+- [x] Add @gingers.com.hk to verified company-email office access (7 database access tests passed; no existing Gingers account available for sign-in verification)
 - [x] Enable automatic office access for both @relish.com and @relish.com.hk; retain @feste-group.com and restore Bianca’s office access (database checks passed; Bianca’s signed-in screen not checked)
 - [x] Prevent a server sign-in from reusing the previous office account's dashboard (cache regression tests passed; own-account view switching and sign-out verified)
 - [x] Expense database, private receipts, office notifications; automated checks and signed-in submission/review verified (staff-only account check unavailable)
