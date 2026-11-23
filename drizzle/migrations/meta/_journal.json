@@ -36,6 +36,13 @@
       "when": 1794884800827,
       "tag": "0004_worker_expenses",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795418923272,
+      "tag": "0005_staff_default_without_domain_escalation",
+      "breakpoints": true
     }
   ]
 }

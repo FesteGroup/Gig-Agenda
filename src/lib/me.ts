@@ -61,7 +61,8 @@ export function useMe() {
     },
     staleTime: 60_000,
   });
-  const me = q.data ? { ...q.data, view, isOffice: q.data.canOffice && view === "office" } : q.data;
+  const effectiveView = q.data?.canOffice ? view : "staff";
+  const me = q.data ? { ...q.data, view: effectiveView, isOffice: q.data.canOffice && effectiveView === "office" } : q.data;
   return { ...q, data: me } as typeof q;
 }
 

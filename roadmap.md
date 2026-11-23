@@ -1,4 +1,6 @@
 # Gig Agenda roadmap
+- [ ] Remove Bianca’s automatic office access, prevent company-email servers receiving it again, and verify staff-only permissions
+- [ ] Prevent a server sign-in from reusing the previous office account's dashboard
 - [x] Expense database, private receipts, office notifications; automated checks and signed-in submission/review verified (staff-only account check unavailable)
 - [x] Sign-in, office/staff roles (auto office for verified @relish.com.hk / @feste-group.com)
 - [x] Positions, rates, after-midnight rates
