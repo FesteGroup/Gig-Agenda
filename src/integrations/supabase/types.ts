@@ -303,6 +303,26 @@ export type Database = {
           },
         ]
       }
+      office_access_exclusions: {
+        Row: {
+          user_id: string
+        }
+        Insert: {
+          user_id: string
+        }
+        Update: {
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "office_access_exclusions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       overtime_rates: {
         Row: {
           client_rate: number
@@ -548,6 +568,10 @@ export type Database = {
       notify_office: {
         Args: { _body: string; _link: string; _title: string }
         Returns: undefined
+      }
+      office_signup_allowed: {
+        Args: { _email: string; _staff_only: boolean }
+        Returns: boolean
       }
       on_event: { Args: { _event: string }; Returns: boolean }
       respond_invitation: {

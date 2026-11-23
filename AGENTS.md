@@ -31,6 +31,7 @@ use the editor.
 
 ## Project rules
 - The root auth subscriber cancels and clears private query caches before refreshing routes on sign-in/sign-out, so a new account cannot inherit the previous account's roles or dashboard.
+- Signup and confirmation share the database's office_signup_allowed predicate for exact company-domain matching; email confirmation is required before automatic office grants, and unrelated staff domains never qualify.
 - Roles live in `user_roles` (office/staff); never on profiles. Sensitive data (position_rates, staff_notes) are separate office-only tables so RLS, not UI, hides them.
 - Staff reply to invitations only via the `respond_invitation` RPC, which enforces slot limits and notifies office.
 - Puree is called only from server functions (`src/lib/puree.functions.ts`); events are cached in `events` keyed by (account, puree_id).

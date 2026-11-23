@@ -1,8 +1,8 @@
 # Gig Agenda roadmap
-- [ ] Remove Bianca’s automatic office access, prevent company-email servers receiving it again, and verify staff-only permissions
-- [ ] Prevent a server sign-in from reusing the previous office account's dashboard
+- [x] Enable automatic office access for both @relish.com and @relish.com.hk; retain @feste-group.com and restore Bianca’s office access (database checks passed; Bianca’s signed-in screen not checked)
+- [x] Prevent a server sign-in from reusing the previous office account's dashboard (cache regression tests passed; own-account view switching and sign-out verified)
 - [x] Expense database, private receipts, office notifications; automated checks and signed-in submission/review verified (staff-only account check unavailable)
-- [x] Sign-in, office/staff roles (auto office for verified @relish.com.hk / @feste-group.com)
+- [x] Sign-in, office/staff roles (auto office for verified @relish.com / @relish.com.hk / @feste-group.com)
 - [x] Positions, rates, after-midnight rates
 - [x] Staff availability (days, weekly patterns, quick buttons) + office board
 - [x] Puree event calendar (needs PUREE_TOKEN_RELISH / PUREE_TOKEN_GINGERS)
