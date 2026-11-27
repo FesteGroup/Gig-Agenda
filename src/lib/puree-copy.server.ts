@@ -1,7 +1,7 @@
-// Copy of the Relish and Gingers Puree orders from the Calendar app (all states), copied 2026-11-27.
+// Copy of the Relish and Gingers Puree orders from the Calendar app (all states), copied 2026-11-28.
 // Server-only. Used by syncPuree when Puree can't be read live (no token / Calendar link). Refreshed daily
 // with scripts/copy-puree-from-calendar.mts.
-export const PUREE_COPY_AT = "2026-11-27";
+export const PUREE_COPY_AT = "2026-11-28";
 
 export interface PureeCopyRow { account: "relish" | "gingers"; puree_id: string; reference: string | null; title: string; client_name: string | null; contact_name: string | null; day: string; start_time: string | null; pax: number | null; state: string | null; order_url: string | null }
 
@@ -3617,7 +3617,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-11-27",
   "start_time": null,
   "pax": 6,
-  "state": "pending",
+  "state": "expired",
   "order_url": "https://puree.app/orders/52784"
  },
  {
@@ -3708,7 +3708,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-11-27",
   "start_time": "17:00",
   "pax": 40,
-  "state": "pending",
+  "state": "accepted",
   "order_url": "https://puree.app/orders/52528"
  },
  {
@@ -3942,7 +3942,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-01",
   "start_time": null,
   "pax": 40,
-  "state": "pending",
+  "state": "accepted",
   "order_url": "https://puree.app/orders/52525"
  },
  {
@@ -3968,7 +3968,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-01",
   "start_time": "12:00",
   "pax": 10,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/47019"
  },
  {
@@ -3981,7 +3981,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-01",
   "start_time": "12:00",
   "pax": 10,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/47020"
  },
  {
@@ -4007,7 +4007,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-01",
   "start_time": "17:30",
   "pax": null,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/51002"
  },
  {
@@ -4124,7 +4124,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-03",
   "start_time": null,
   "pax": null,
-  "state": "pending",
+  "state": "accepted",
   "order_url": "https://puree.app/orders/49600"
  },
  {
@@ -4228,7 +4228,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-03",
   "start_time": "16:30",
   "pax": null,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/47761"
  },
  {
@@ -4241,7 +4241,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-03",
   "start_time": "17:00",
   "pax": null,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/49403"
  },
  {
@@ -4378,7 +4378,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "relish",
   "puree_id": "51785",
   "reference": "270.1",
-  "title": "Princess Yachts | HK International Boat Show + Reception | 4 December (2 of 4 days)",
+  "title": "Princess Yachts | HK International Boat Show + Reception | 4 December",
   "client_name": "Princess Yachts",
   "contact_name": "Stefanie Chiu",
   "day": "2026-12-04",
@@ -4449,7 +4449,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-04",
   "start_time": "17:00",
   "pax": null,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/46189"
  },
  {
@@ -4513,7 +4513,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "contact_name": "Kirsten Flynn",
   "day": "2026-12-04",
   "start_time": "19:00",
-  "pax": 40,
+  "pax": 50,
   "state": "accepted",
   "order_url": "https://puree.app/orders/46503"
  },
@@ -4573,7 +4573,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "relish",
   "puree_id": "51786",
   "reference": "271.1",
-  "title": "Princess Yachts | HK International Boat Show | 5 December (3 of 4 days)",
+  "title": "Princess Yachts | HK International Boat Show | 5 December ",
   "client_name": "Princess Yachts",
   "contact_name": "Stefanie Chiu",
   "day": "2026-12-05",
@@ -4618,7 +4618,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-05",
   "start_time": "18:30",
   "pax": null,
-  "state": "pending",
+  "state": "declined",
   "order_url": "https://puree.app/orders/49964"
  },
  {
@@ -4638,7 +4638,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "relish",
   "puree_id": "52541",
   "reference": "291.1",
-  "title": "Princess Yachts | HK International Boat Show | 5 December (3 of 4 days)",
+  "title": "Princess Yachts | HK International Boat Show | 6 December ",
   "client_name": "Princess Yachts",
   "contact_name": "Stefanie Chiu",
   "day": "2026-12-06",
@@ -5012,6 +5012,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "order_url": "https://puree.app/orders/52527"
  },
  {
+  "account": "gingers",
+  "puree_id": "53263",
+  "reference": "205.1",
+  "title": "Feste-ive Canapés DO",
+  "client_name": "Rabobank International",
+  "contact_name": "Bernice Tso",
+  "day": "2026-12-11",
+  "start_time": null,
+  "pax": 80,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/53263"
+ },
+ {
   "account": "relish",
   "puree_id": "44106",
   "reference": "104.1",
@@ -5280,7 +5293,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "contact_name": "Kai Einheuser",
   "day": "2026-12-16",
   "start_time": "16:00",
-  "pax": 15,
+  "pax": 12,
   "state": "pending",
   "order_url": "https://puree.app/orders/52292"
  },
@@ -5322,6 +5335,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "pax": 50,
   "state": "accepted",
   "order_url": "https://puree.app/orders/44757"
+ },
+ {
+  "account": "gingers",
+  "puree_id": "53260",
+  "reference": "202.1",
+  "title": "Party Platters Drop-off",
+  "client_name": "Sophie Bent",
+  "contact_name": "Sophie Bent",
+  "day": "2026-12-18",
+  "start_time": null,
+  "pax": 10,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/53260"
  },
  {
   "account": "gingers",
@@ -5371,7 +5397,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "contact_name": "Wendy Leung",
   "day": "2026-12-18",
   "start_time": "18:00",
-  "pax": 100,
+  "pax": 50,
   "state": "pending",
   "order_url": "https://puree.app/orders/41804"
  },
@@ -5493,6 +5519,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "order_url": "https://puree.app/orders/46495"
  },
  {
+  "account": "gingers",
+  "puree_id": "53261",
+  "reference": "203.1",
+  "title": "Feste-ive DO",
+  "client_name": "Christina Cheung",
+  "contact_name": "Christina Cheung",
+  "day": "2026-12-25",
+  "start_time": null,
+  "pax": 10,
+  "state": "accepted",
+  "order_url": "https://puree.app/orders/53261"
+ },
+ {
   "account": "relish",
   "puree_id": "52785",
   "reference": "299.1",
@@ -5515,7 +5554,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2026-12-26",
   "start_time": "12:30",
   "pax": 24,
-  "state": "pending",
+  "state": "accepted",
   "order_url": "https://puree.app/orders/52146"
  },
  {
@@ -5535,7 +5574,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "relish",
   "puree_id": "53081",
   "reference": "305.1",
-  "title": "FIRST DRAFT — Dragon's Back Luxury Picnic — T10HK",
+  "title": "Vegetarian & Gluten-Free Beach Picnic",
   "client_name": "T10HK",
   "contact_name": "Hsu-Yung Lau",
   "day": "2026-12-28",
@@ -5587,7 +5626,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "account": "relish",
   "puree_id": "53082",
   "reference": "306.1",
-  "title": "FIRST DRAFT — NYE Gaiole Cruise Dining — T10HK",
+  "title": "New Year's Eve Dining aboard Gaiole",
   "client_name": "T10HK",
   "contact_name": "Hsu-Yung Lau",
   "day": "2026-12-31",
@@ -5702,6 +5741,19 @@ export const PUREE_COPY: PureeCopyRow[] = [
  },
  {
   "account": "gingers",
+  "puree_id": "53262",
+  "reference": "204.1",
+  "title": "Simple Cocktail Party",
+  "client_name": "Mishcon de Reya LLP",
+  "contact_name": "Yeng Kwok Yock",
+  "day": "2027-01-14",
+  "start_time": "18:00",
+  "pax": 55,
+  "state": "pending",
+  "order_url": "https://puree.app/orders/53262"
+ },
+ {
+  "account": "gingers",
   "puree_id": "51001",
   "reference": "170.1",
   "title": "AM/PM break",
@@ -5786,7 +5838,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "client_name": "Bridge Data Centres Hong Kong Limited",
   "contact_name": "Kaitlyn Yeung",
   "day": "2027-01-25",
-  "start_time": "10:00",
+  "start_time": "09:00",
   "pax": 30,
   "state": "pending",
   "order_url": "https://puree.app/orders/52544"
@@ -5801,7 +5853,7 @@ export const PUREE_COPY: PureeCopyRow[] = [
   "day": "2027-01-30",
   "start_time": "10:00",
   "pax": null,
-  "state": "pending",
+  "state": "expired",
   "order_url": "https://puree.app/orders/46480"
  },
  {
